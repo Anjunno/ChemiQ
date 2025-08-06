@@ -29,6 +29,8 @@ public class Member {
 
     private Long deviceId;
 
+    private String role;
+
     private String refreshToken;
 
     @CreationTimestamp
