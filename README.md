@@ -83,3 +83,20 @@ Emolink는 **IoT 기반 감정 공유 무드등 프로젝트 서비스**로,
 - 앞으로는 발급된 토큰을 활용해 인가(Authorization) 처리 및 Refresh Token 전략 구현까지 이어갈 예정
 
 </details>
+
+<details>
+<summary>🗓️ 2025-08-10 - JWT 토큰 검증 필터 구현</summary>
+
+**📌 개발 일지**
+- JWT 토큰 검증을 위한 `JWTFilter` 클래스 작성 
+- `OncePerRequestFilter`를 상속받아 모든 요청에 대해 JWT 토큰 유효성 검사 수행 (/login, /signup 제외) 
+- 토큰이 없거나 만료된 경우 필터 체인을 통해 다음 요청으로 정상 진행하도록 예외 처리
+- 유효한 토큰에서 사용자 정보 추출 후 `SecurityContextHolder`에 인증 정보 세팅
+
+**📝 개발 회고**
+- `SecurityContextHolder`에 인증 정보를 설정하는 과정과 임의로 생성한 사용자 객체의 역할이 혼란스러웠음
+- 처음에는 `Member` 객체에 임의 데이터를 넣는 것이 잘못된 것 같아 의문이 들었으나, 스프링 시큐리티의 `SecurityContextHolder` 역할과 JWT 정보 기반 다른 자료들을 통해 학습하며 점차 이해하게 됨
+- 특히, JWT를 통해 사용자 식별과 권한 정보만 있으면 매 요청마다 DB에서 사용자 전체 정보를 가져올 필요 없이 인증 상태를 유지할 수 있음을 알게 됨
+- 아직 JWT 토큰 만료 후 갱신 처리 등 보완할 부분이 많아 추가 학습과 구현이 필요함
+- Postman을 통해 토큰이 없는 요청과 있는 요청을 테스트를 해보며 잘 동작함을 확인했음 
+</details>
