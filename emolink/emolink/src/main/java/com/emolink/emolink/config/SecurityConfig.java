@@ -1,5 +1,6 @@
 package com.emolink.emolink.config;
 
+import com.emolink.emolink.jwt.JWTFilter;
 import com.emolink.emolink.jwt.JWTUtil;
 import com.emolink.emolink.jwt.LoginFilter;
 import lombok.RequiredArgsConstructor;
@@ -55,13 +56,15 @@ public class SecurityConfig {
 
                 //경로별 인가 작업
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/signUp").permitAll() // 회원가입은 인증 없이 허용
+                        .requestMatchers("/signup").permitAll() // 회원가입은 인증 없이 허용
                         .anyRequest().permitAll()               // 다른 요청도 허용 (나중에 수정 가능)
 //                        .anyRequest().authenticated()               // 다른 요청 인증된 사용자
                 );
 
         http // UsernamePasswordAuthenticationFilter 자리에 LoginFilter로 대체
-                .addFilterAt(new LoginFilter(jwtUtil, authenticationManager(authenticationConfiguration)), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(jwtUtil, authenticationManager(authenticationConfiguration)), UsernamePasswordAuthenticationFilter.class)
+                //LoginFilter 뒤에 JWTFilter 등록
+                .addFilterAfter(new JWTFilter(jwtUtil), LoginFilter.class);
 
 
         return http.build();

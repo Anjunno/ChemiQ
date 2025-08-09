@@ -14,10 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -39,5 +36,10 @@ public class MemberController {
             return ResponseEntity.ok(new MemberSignUpResponse("회원가입 성공"));
         }
         return ResponseEntity.badRequest().body(new MemberSignUpResponse("회원가입 실패"));
+    }
+
+    @GetMapping("/test")
+    public ResponseEntity<?> test() {
+        return ResponseEntity.ok().body("접근 가능합니다");
     }
 }
