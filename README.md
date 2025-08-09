@@ -56,3 +56,30 @@ Emolink는 **IoT 기반 감정 공유 무드등 프로젝트 서비스**로,
 - 이해가 부족한 부분은 문서와 샘플 프로젝트를 통해 더 공부하고 흐름을 정리해볼 계획
 
 </details>
+
+<details>
+<summary>🗓️ 2025-08-09 - JWT 토큰 발급 로직 구현</summary>
+
+**📌 개발 일지**
+- JWT 유틸리티 클래스(`JWTUtil`) 구현: 토큰 생성, Claim 파싱, 만료 검증 기능 포함  
+- 로그인 성공 시 JWT 토큰을 생성하여 응답 헤더에 추가하는 로직 구현 (`LoginFilter`의 `successfulAuthentication` 오버라이드)  
+- 사용자 인증에 성공하면 `memberId`, `role` 정보를 담은 JWT를 `Authorization: Bearer <token>` 형식으로 응답  
+- `CustomUserDetails`에서 사용자 정보를 추출하고, SecurityContext에서 권한 확인 가능하도록 처리  
+
+**📝 개발 회고**
+- 이전 25.08.06 개발 당시에 이해하기 어려웠던 Spring Security의 인증 처리 흐름을 다시 확인해보며 전보다 해당 흐름을 이해할 수 있도록 노력해보았음.  
+- 특히 아래와 같은 순서로 인증이 이루어짐을 정리하며 구조를 잘 잡을 수 있었음:
+
+  1. 클라이언트가 `/login`으로 `POST` 요청을 보냄  
+  2. `LoginFilter`가 요청을 가로채고, `attemptAuthentication()`에서 `memberId`와 `password`를 추출  
+  3. `AuthenticationManager`가 `CustomUserDetailsService`의 `loadUserByUsername()` 호출  
+  4. 해당 메서드에서 DB 조회 후 `CustomUserDetails` 객체 반환  
+  5. Security 내부적으로 아이디와 비밀번호를 비교 (`UsernamePasswordAuthenticationToken`과 `UserDetails` 기반)  
+  6. 인증 성공 시 `successfulAuthentication()` 실행 → JWT 토큰 생성 및 응답 헤더에 삽입  
+  7. 인증 실패 시 `unsuccessfulAuthentication()` 호출
+
+- Spring Security의 흐름이 처음엔 복잡하게 느껴졌지만, 이전보다는 나아진 것 같음.
+- POSTMAN을 통해 테스트 로그인 시에 응답코드(200)과 함께 응답 헤더에 JWT 토큰이 정상적으로 포함되어 있는 것을 확인했음.
+- 앞으로는 발급된 토큰을 활용해 인가(Authorization) 처리 및 Refresh Token 전략 구현까지 이어갈 예정
+
+</details>
