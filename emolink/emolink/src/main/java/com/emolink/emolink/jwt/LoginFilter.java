@@ -1,5 +1,6 @@
 package com.emolink.emolink.jwt;
 
+import com.emolink.emolink.DTO.CustomUserDetails;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -9,8 +10,12 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.w3c.dom.ls.LSOutput;
+
+import java.util.Collection;
+import java.util.Iterator;
 
 @RequiredArgsConstructor
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
@@ -22,6 +27,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         return request.getParameter("memberId");
     }
 
+    private final JWTUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
 
 //    public LoginFilter(AuthenticationManager authenticationManager) {
@@ -47,13 +53,31 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     @Override
     protected void successfulAuthentication(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain chain,
-            Authentication authentication) {
+            HttpServletRequest request,     //클라이언트가 보낸 요청 객체
+            HttpServletResponse response,   //서버가 클라이언트에게 응답할 객체
+            FilterChain chain,              //필터 체인 (다음 필터로 넘길 수 있음)
+            Authentication authentication   //인증 정보를 담은 객체 (사용자 정보 포함)
+    ) {
+        // 인증된 사용자 정보 가져오기
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        // 사용자 ID 추출 (memberId)
+        String memberId = customUserDetails.getUsername();
 
 
-        System.out.println("로그인 성공");
+        // 사용자 권한(ROLE_XXX) 가져오기
+        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+        Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
+        GrantedAuthority auth = iterator.next();
+
+        // 권한 이름 추출 (ex. "ROLE_USER", "ROLE_ADMIN")
+        String role = auth.getAuthority();
+
+        // JWT 토큰 생성 (만료 시간: 10시간)
+        String token = jwtUtil.createJwt(memberId, role, 60*60*10L);
+
+
+        // 응답 헤더에 JWT 토큰 추가 (Bearer 타입으로 명시)
+        response.addHeader("Authorization", "Bearer " + token);
 
     }
 
@@ -64,7 +88,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             AuthenticationException failed) {
 
 
-        System.out.println("로그인 실패");
+//        System.out.println("로그인 실패");
+        response.setStatus(401);
     }
 
 }

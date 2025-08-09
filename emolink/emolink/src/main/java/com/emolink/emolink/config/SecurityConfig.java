@@ -1,5 +1,6 @@
 package com.emolink.emolink.config;
 
+import com.emolink.emolink.jwt.JWTUtil;
 import com.emolink.emolink.jwt.LoginFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +18,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final JWTUtil jwtUtil;
 
     // AuthenticationManager가 인자로 받음 AuthenticationConfiguration 객체 생성자 주입
     private final AuthenticationConfiguration authenticationConfiguration;
@@ -58,7 +61,7 @@ public class SecurityConfig {
                 );
 
         http // UsernamePasswordAuthenticationFilter 자리에 LoginFilter로 대체
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration)), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(jwtUtil, authenticationManager(authenticationConfiguration)), UsernamePasswordAuthenticationFilter.class);
 
 
         return http.build();

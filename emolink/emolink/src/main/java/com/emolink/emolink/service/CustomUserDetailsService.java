@@ -17,6 +17,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private final MemberRepository memberRepository;
 
+    // 해당하는 memberId에 맞는 Member 찾아서 CustomUserDetails에 전달
     @Override
     public UserDetails loadUserByUsername(String memberId) throws UsernameNotFoundException {
 

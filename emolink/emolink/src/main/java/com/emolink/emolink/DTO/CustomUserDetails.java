@@ -20,7 +20,6 @@ public class CustomUserDetails implements UserDetails {
         Collection<GrantedAuthority> collection = new ArrayList<>();
 
         collection.add(new GrantedAuthority() {
-
             @Override
             public String getAuthority() {
                 return member.getRole();
@@ -40,24 +39,28 @@ public class CustomUserDetails implements UserDetails {
         return member.getMemberId();
     }
 
+    // 계정 만료 여부
     @Override
     public boolean isAccountNonExpired() {
         return true;
 //        return UserDetails.super.isAccountNonExpired();
     }
 
+    // 계정 잠금 여부
     @Override
     public boolean isAccountNonLocked() {
         return true;
 //        return UserDetails.super.isAccountNonLocked();
     }
 
+    // 자격 증명 만료 여부 (비밀번호 등)
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
 //        return UserDetails.super.isCredentialsNonExpired();
     }
 
+    // 활성화 여부
     @Override
     public boolean isEnabled() {
         return true;
