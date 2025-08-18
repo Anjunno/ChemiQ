@@ -100,3 +100,24 @@ Emolink는 **IoT 기반 감정 공유 무드등 프로젝트 서비스**로,
 - 아직 JWT 토큰 만료 후 갱신 처리 등 보완할 부분이 많아 추가 학습과 구현이 필요함
 - Postman을 통해 토큰이 없는 요청과 있는 요청을 테스트를 해보며 잘 동작함을 확인했음 
 </details>
+
+
+<details>
+<summary>🗓️ 2025-08-18 - JWT Refresh Token 발급 및 재발급 API 구현</summary>
+
+**📌 개발 일지**
+- 로그인 성공 시 Access Token과 함께 긴 만료 시간을 가진 Refresh Token을 발급하도록 `LoginFilter` 수정
+- JWT Payload에 `category` 클레임을 추가하여 토큰의 종류('access', 'refresh')를 명확히 구분
+- `POST /reissue` 엔드포인트를 통해 Refresh Token으로 새로운 Access Token을 발급하는 `ReissueController` 작성
+- 재발급 로직에서 발생 가능한 역할 정보 추출 버그를 수정하고, 만료된 토큰에 대한 예외 처리 로직 추가
+- Refresh Token을 DB에 저장하는 로직을 `MemberService`에 추가하고 `LoginFilter`에 주입을 시도하던 중 순환 참조 문제 발견
+
+**📝 개발 회고**
+
+- Refresh Token을 도입하여 사용자가 매번 재로그인해야 하는 불편함을 개선하는 첫 단계를 성공적으로 구현했음. `category` 클레임을 활용하여 토큰의 역할을 명시적으로 구분하는 방식이 각 로직에서 토큰을 검증할 때 매우 유용하다는 것을 느낌.
+- Refresh Token의 상태 관리를 위해 DB 저장 로직을 `MemberService`에 구현하고, 이를 `LoginFilter`에 주입하는 과정에서 `SecurityConfig`와의 순환 참조(Circular Dependency) 문제를 발견함.
+- 처음에는 문제의 원인을 파악하기 어려웠고, Spring Bean의 생명주기와 의존성 주입(DI)에 대한 더 깊은 이해가 필요함을 느낌. 단순히 설정을 변경하여 문제를 회피하기보다는, 근본적인 원인을 이해하고 올바른 설계 방법을 학습하기 위해 관련 내용을 더 깊이 알아보기로 결정함.
+- 따라서 현재 커밋은 순환 참조 해결 이전, Refresh Token의 발급과 재발급 기능의 핵심 로직이 구현된 상태임. 다음 단계로 순환 참조 문제에 대해 학습하고 올바른 해결책을 적용할 예정.
+- Postman을 통해 로그인 시 두 종류의 토큰이 정상적으로 발급되고, `/reissue` API가 유효한 Refresh Token에 대해 새로운 Access Token을 발급하는 것을 확인하며 기능의 기본 골격은 완성했음.
+
+</details>
