@@ -21,11 +21,11 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String memberId) throws UsernameNotFoundException {
 
-        Member memberData = memberRepository.findByMemberId(memberId);
+        Optional<Member> memberData = memberRepository.findByMemberId(memberId);
 
-        if(memberData != null) {
-
-            return new CustomUserDetails(memberData);
+        if(memberData.isPresent()) {
+            Member data = memberData.get();
+            return new CustomUserDetails(data);
         }
 
 

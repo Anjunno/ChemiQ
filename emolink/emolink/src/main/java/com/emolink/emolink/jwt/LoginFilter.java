@@ -1,6 +1,8 @@
 package com.emolink.emolink.jwt;
 
 import com.emolink.emolink.DTO.CustomUserDetails;
+import com.emolink.emolink.service.MemberService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,8 +16,11 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.w3c.dom.ls.LSOutput;
 
+import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 @RequiredArgsConstructor
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
@@ -29,6 +34,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final JWTUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
+//    private final MemberService memberService;
 
 //    public LoginFilter(AuthenticationManager authenticationManager) {
 //        this.authenticationManager = authenticationManager;
@@ -57,12 +63,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             HttpServletResponse response,   //서버가 클라이언트에게 응답할 객체
             FilterChain chain,              //필터 체인 (다음 필터로 넘길 수 있음)
             Authentication authentication   //인증 정보를 담은 객체 (사용자 정보 포함)
-    ) {
+    ) throws IOException {
         // 인증된 사용자 정보 가져오기
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+
         // 사용자 ID 추출 (memberId)
         String memberId = customUserDetails.getUsername();
-
 
         // 사용자 권한(ROLE_XXX) 가져오기
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
@@ -72,12 +78,31 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         // 권한 이름 추출 (ex. "ROLE_USER", "ROLE_ADMIN")
         String role = auth.getAuthority();
 
-        // JWT 토큰 생성 (만료 시간: 10시간)
-        String token = jwtUtil.createJwt(memberId, role, 60*60*10L);
+        // JWT 엑세스토큰 생성 (만료 시간: 1시간)
+        String accessToken = jwtUtil.createJwt("access", memberId, role, 60*60L);
+
+        // JWT 리프레시토큰 생성 (만료 시간: 10시간)
+        String refreshToken = jwtUtil.createJwt("refresh", memberId, role, 60*60*10L);
+        // JWT 리프레시토큰 DB에 저장(해싱)
+//        memberService.addRefresh(memberId, refreshToken);
+
 
 
         // 응답 헤더에 JWT 토큰 추가 (Bearer 타입으로 명시)
-        response.addHeader("Authorization", "Bearer " + token);
+        response.addHeader("Authorization", "Bearer " + accessToken);
+
+
+
+        // RefreshToken → 바디(JSON)
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        // 응답 바디에 담을 데이터를 Map 구조로 생성
+        Map<String, String> tokens = new HashMap<>();
+        tokens.put("refreshToken", refreshToken);
+
+        // ObjectMapper를 사용해 Map을 JSON 문자열로 변환 후, response 바디에 씀
+        new ObjectMapper().writeValue(response.getWriter(), tokens);
 
     }
 

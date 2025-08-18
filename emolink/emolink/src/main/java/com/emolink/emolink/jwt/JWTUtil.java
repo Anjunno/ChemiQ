@@ -64,6 +64,16 @@ public class JWTUtil {
                 .before(new Date());  // 현재 시간보다 이전이면 만료
     }
 
+    // JWT 토큰 유형 추출
+    public String getCategory(String token) {
+        return Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("category", String.class);  // 클레임에서 cartegory 추출
+    }
+
     /**
      * JWT 생성 메서드
      * @param memberId 사용자 고유 ID
@@ -71,8 +81,9 @@ public class JWTUtil {
      * @param expiredMs 토큰 유효 시간 (밀리초 단위)
      * @return 서명된 JWT 문자열 반환
      */
-    public String createJwt(String memberId, String role, Long expiredMs) {
+    public String createJwt(String category, String memberId, String role, Long expiredMs) {
         return Jwts.builder()
+                .claim("category", category)                                // 토큰 유형 (access, refresh)
                 .claim("memberId", memberId)                                // 사용자 ID 추가
                 .claim("role", role)                                        // 사용자 역할 추가
                 .issuedAt(new Date(System.currentTimeMillis()))                // 발급 시간
