@@ -1,6 +1,9 @@
 package com.emolink.emolink.jwt;
 
 import com.emolink.emolink.DTO.CustomUserDetails;
+import com.emolink.emolink.entity.Member;
+import com.emolink.emolink.entity.RefreshToken;
+import com.emolink.emolink.repository.RefreshRepository;
 import com.emolink.emolink.service.MemberService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
@@ -17,10 +20,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.w3c.dom.ls.LSOutput;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @RequiredArgsConstructor
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
@@ -34,6 +35,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final JWTUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
+    private final RefreshRepository refreshRepository;
 //    private final MemberService memberService;
 
 //    public LoginFilter(AuthenticationManager authenticationManager) {
@@ -67,6 +69,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         // 인증된 사용자 정보 가져오기
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
 
+        // 사용자 No 추출 (memberNo)
+        Long memberNo = customUserDetails.getMemberNo();
+
         // 사용자 ID 추출 (memberId)
         String memberId = customUserDetails.getUsername();
 
@@ -79,12 +84,14 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String role = auth.getAuthority();
 
         // JWT 엑세스토큰 생성 (만료 시간: 1시간)
-        String accessToken = jwtUtil.createJwt("access", memberId, role, 60*60L);
+        String accessToken = jwtUtil.createJwt("access", memberNo, memberId, role, 60*60 * 1000L);
 
         // JWT 리프레시토큰 생성 (만료 시간: 10시간)
-        String refreshToken = jwtUtil.createJwt("refresh", memberId, role, 60*60*10L);
-        // JWT 리프레시토큰 DB에 저장(해싱)
-//        memberService.addRefresh(memberId, refreshToken);
+        String refreshToken = jwtUtil.createJwt("refresh", memberNo, memberId, role, 60*60*10 * 1000L);
+
+
+        // JWT 리프레시토큰 DB에 저장
+        saveRefreshToken(memberNo, refreshToken, 60*60*10 * 1000L);
 
 
 
@@ -117,4 +124,24 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.setStatus(401);
     }
 
+
+    // refresh token DB 저장 메서드
+    private void saveRefreshToken(Long memberNo, String refreshToken, Long expiredMs)  {
+
+        // Member 엔티티를 프록시(참조)로 가져옴.
+        Member member = Member.builder().memberNo(memberNo).build();
+
+        // 만료시간
+        Date expiration = new Date(System.currentTimeMillis() + expiredMs);
+
+        // 객체 생성
+        RefreshToken token = RefreshToken.builder()
+                .member(member)
+                .refreshToken(refreshToken)
+                .expiration(expiration)
+                .build();
+
+        // DB에 저장
+        refreshRepository.save(token);
+    }
 }

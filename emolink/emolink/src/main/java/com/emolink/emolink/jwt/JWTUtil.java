@@ -28,6 +28,17 @@ public class JWTUtil {
         );
     }
 
+    // 토큰에서 사용자 ID(memberId) 추출
+    public Long getMemberNo(String token) {
+        return Jwts.parser()
+                .verifyWith(secretKey)   // 비밀 키로 서명 검증
+                .build()
+                .parseSignedClaims(token)  // 토큰 파싱
+                .getPayload()
+                .get("memberNo", Number.class)  // 클레임에서 memberNo 추출
+                .longValue();
+    }
+
 
     // 토큰에서 사용자 ID(memberId) 추출
     public String getMemberId(String token) {
@@ -81,9 +92,10 @@ public class JWTUtil {
      * @param expiredMs 토큰 유효 시간 (밀리초 단위)
      * @return 서명된 JWT 문자열 반환
      */
-    public String createJwt(String category, String memberId, String role, Long expiredMs) {
+    public String createJwt(String category, Long memberNo, String memberId, String role, Long expiredMs) {
         return Jwts.builder()
                 .claim("category", category)                                // 토큰 유형 (access, refresh)
+                .claim("memberNo", memberNo)
                 .claim("memberId", memberId)                                // 사용자 ID 추가
                 .claim("role", role)                                        // 사용자 역할 추가
                 .issuedAt(new Date(System.currentTimeMillis()))                // 발급 시간

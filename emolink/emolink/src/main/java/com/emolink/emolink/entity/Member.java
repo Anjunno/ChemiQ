@@ -31,7 +31,7 @@ public class Member {
 
     private String role;
 
-    private String refreshToken;
+//    private String refreshToken;
 
     @CreationTimestamp
     private LocalDateTime created;

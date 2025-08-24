@@ -32,9 +32,11 @@ public class MemberController {
     })
     @PostMapping("/signup")
     public ResponseEntity<MemberSignUpResponse> signUp(@RequestBody MemberSignUpRequest request) {
+
         if (memberService.createMember(request)) {
             return ResponseEntity.ok(new MemberSignUpResponse("회원가입 성공"));
         }
+
         return ResponseEntity.badRequest().body(new MemberSignUpResponse("회원가입 실패"));
     }
 
