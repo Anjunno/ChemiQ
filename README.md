@@ -121,3 +121,23 @@ Emolink는 **IoT 기반 감정 공유 무드등 프로젝트 서비스**로,
 - Postman을 통해 로그인 시 두 종류의 토큰이 정상적으로 발급되고, `/reissue` API가 유효한 Refresh Token에 대해 새로운 Access Token을 발급하는 것을 확인하며 기능의 기본 골격은 완성했음.
 
 </details>
+
+
+<details>
+<summary>🗓️ 2025-08-24 - Refresh Token DB 저장 및 순환(Rotation) 전략 구현</summary>
+
+**📌 개발 일지**
+- `ReissueController`의 비즈니스 로직을 `ReissueService`로 분리하여 역할과 책임을 명확히 함.
+- (순환 참조 해결) 기존 `Member` 테이블에 있던 `refreshToken` 필드를 제거하고, `RefreshToken` 엔티티를 새로 생성하여 테이블을 분리함
+- Refresh Token을 DB에 저장하기 위한 `RefreshToken` 엔티티 및 `RefreshTokenRepository` 구현.
+- 로그인 성공 시, 발급된 `Refresh Token`을 DB에 저장하여 서버가 각 세션을 관리할 수 있는 기반 마련.
+- 보안 강화를 위해 토큰 재발급 시 기존 Refresh Token을 무효화하고 새로운 토큰을 발급하는 `토큰 순환(Rotation)` 전략 적용.
+
+**📝 개발 회고**
+- `ReissueController`의 로직을 `ReissueService`로 분리하니, 코드가 간결한 구조가 되었음.
+-`Refresh Token`을 DB에 저장하고 `토큰 순환(Rotation)` 전략을 사용함으로써 발급했던 모든 Refresh Token를 기억한 뒤, Refresh Token을 1번만 사용할 수 있게 하여 보안성을 강화하였음.
+- 여러가지 로직을 구현하다보니 점점 복잡해지는 것 같다. 내가 작성한 코드의 흐름을 한번 더 확인하고 명확히 파악해야겠음.
+- `POSTMAN`으로 로그인 시 DB에 `Refresh Token`이 잘 저장됨을 확인했고, 토큰 재발급시에 Access, Refresh Token이 올바르게 갱신됨을 확인하였다. 또한, `Refresh Token`이 DB에 갱신됨도 확인함.
+
+
+</details>
