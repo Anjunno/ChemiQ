@@ -25,6 +25,6 @@ public class RefreshToken {
 
     private String refreshToken;
 
-    private Date expiration;
+    private LocalDateTime expiration;
 
 }

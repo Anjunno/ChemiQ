@@ -3,24 +3,22 @@ package com.emolink.emolink.jwt;
 import com.emolink.emolink.DTO.CustomUserDetails;
 import com.emolink.emolink.entity.Member;
 import com.emolink.emolink.entity.RefreshToken;
-import com.emolink.emolink.repository.RefreshRepository;
-import com.emolink.emolink.service.MemberService;
+import com.emolink.emolink.repository.RefreshTokenRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.converter.json.GsonBuilderUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.w3c.dom.ls.LSOutput;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @RequiredArgsConstructor
@@ -35,7 +33,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final JWTUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
-    private final RefreshRepository refreshRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 //    private final MemberService memberService;
 
 //    public LoginFilter(AuthenticationManager authenticationManager) {
@@ -132,7 +130,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         Member member = Member.builder().memberNo(memberNo).build();
 
         // 만료시간
-        Date expiration = new Date(System.currentTimeMillis() + expiredMs);
+        LocalDateTime expiration = LocalDateTime.now().plus(expiredMs, ChronoUnit.MILLIS);
 
         // 객체 생성
         RefreshToken token = RefreshToken.builder()
@@ -142,6 +140,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
                 .build();
 
         // DB에 저장
-        refreshRepository.save(token);
+        refreshTokenRepository.save(token);
     }
 }

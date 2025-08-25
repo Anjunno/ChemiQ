@@ -2,8 +2,11 @@ package com.emolink.emolink.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 @Configuration
 public class SwaggerConfig {
@@ -14,6 +17,12 @@ public class SwaggerConfig {
                 .info(new Info()
                         .title("Emolink API 문서")
                         .description("감정 공유 무드등 서비스 API 명세서")
-                        .version("v1.0.0"));
+                        .version("v1.0.0")
+                )
+                .servers(List.of(
+                   new Server()
+                           .url("http://localhost:8080")
+                           .description("개발용 서버")
+                ));
     }
 }

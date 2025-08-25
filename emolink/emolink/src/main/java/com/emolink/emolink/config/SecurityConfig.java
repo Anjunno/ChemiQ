@@ -1,11 +1,12 @@
 package com.emolink.emolink.config;
 
+import com.emolink.emolink.jwt.CustomLogoutFilter;
 import com.emolink.emolink.jwt.JWTFilter;
 import com.emolink.emolink.jwt.JWTUtil;
 import com.emolink.emolink.jwt.LoginFilter;
-import com.emolink.emolink.repository.RefreshRepository;
-import com.emolink.emolink.service.MemberService;
-import jakarta.servlet.http.HttpServletRequest;
+import com.emolink.emolink.repository.RefreshTokenRepository;
+import com.emolink.emolink.service.RefreshTokenService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,10 +18,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-
-import java.util.Collections;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -30,7 +28,10 @@ public class SecurityConfig {
     private final JWTUtil jwtUtil;
     // AuthenticationManager가 인자로 받음 AuthenticationConfiguration 객체 생성자 주입
     private final AuthenticationConfiguration authenticationConfiguration;
-    private final RefreshRepository refreshRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
+
+    private final RefreshTokenService refreshTokenService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     // AuthenticationManager Bean 등록
     @Bean
@@ -105,10 +106,12 @@ public class SecurityConfig {
 //                        .anyRequest().authenticated()               // 다른 요청 인증된 사용자
                 );
 
-        http // UsernamePasswordAuthenticationFilter 자리에 LoginFilter로 대체
-                .addFilterAt(new LoginFilter(jwtUtil, authenticationManager(authenticationConfiguration), refreshRepository), UsernamePasswordAuthenticationFilter.class)
-                //LoginFilter 뒤에 JWTFilter 등록
-                .addFilterAfter(new JWTFilter(jwtUtil), LoginFilter.class);
+        http    // UsernamePasswordAuthenticationFilter 자리에 LoginFilter로 대체
+                .addFilterAt(new LoginFilter(jwtUtil, authenticationManager(authenticationConfiguration), refreshTokenRepository), UsernamePasswordAuthenticationFilter.class)
+                // LoginFilter 뒤에 JWTFilter 등록
+                .addFilterAfter(new JWTFilter(jwtUtil), LoginFilter.class)
+                // LogoutFilter 앞에  CustomLogoutFilter 등록
+                .addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshTokenService), LogoutFilter.class);
 
 
         return http.build();
