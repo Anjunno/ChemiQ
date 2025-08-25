@@ -141,3 +141,20 @@ Emolink는 **IoT 기반 감정 공유 무드등 프로젝트 서비스**로,
 
 
 </details>
+
+<details>
+<summary>🗓️ 2025-08-25 - JWT 로그아웃 구현 및 API DTO 리팩토링</summary>
+
+**📌 개발 일지**
+- JWT Refresh Token 기반의 로그아웃 기능 구현 (`CustomLogoutFilter` 및 `RefreshService` 사용).
+- `/signup`, `/reissue` API의 요청/응답을 `Map`에서 전용 DTO(`MemberSignUpRequest/Response`, `ReissueRequest/Response` 등)로 리팩토링.
+- 일관된 에러 처리를 위해 `ErrorResponse` DTO를 도입하고, 컨트롤러의 예외 처리 로직에 적용.
+- Swagger(OpenAPI)를 사용하여 `/signup`, `/reissue` 엔드포인트에 대한 API 명세를 문서화.
+
+**📝 개발 회고**
+- 처음에는 요청과 응답에 DTO를 사용하는 것이 단순히 코드를 늘리는 번거로운 작업이라 생각했음. 특히 서비스 계층과 컨트롤러 계층에서 각각 어떤 DTO를 사용해야 할지 구분하는 것이 혼란스러웠으나, 각 계층의 역할에 맞는 DTO를 설계하고 나니 오히려 코드의 책임이 명확해지고 타입 안정성이 높아져 유지보수가 훨씬 쉬워진다는 것을 깨달음.
+- 로그아웃 기능을 구현하면서, `Filter`에서 직접 DB에 접근하는 대신 `Service` 계층으로 로직을 위임하고 트랜잭션을 관리하는 것의 중요성을 다시 한번 느낌.
+- 오늘 구현한 로그아웃 기능과 DTO로 리팩토링된 API들을 Postman으로 직접 테스트함. 특히 로그아웃 요청 시 DB에서 Refresh Token이 정상적으로 삭제되는 것을 확인했고, `/reissue` API가 새로운 Access Token을 헤더에, 새로운 Refresh Token을 Body에 정확히 담아 반환하는 것을 보며 구현에 대한 확신을 얻었음.
+- 여러 기능을 한 번에 개발하고 리팩토링하면서 코드의 전체적인 구조와 흐름을 놓치지 않는 것이 중요하다는 것을 느낌. DTO 도입과 같은 리팩토링이 당장은 번거로워도, 장기적으로는 시스템의 안정성과 예측 가능성을 크게 높여준다는 것을 체감한 하루였음.
+
+</details>
