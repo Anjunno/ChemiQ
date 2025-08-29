@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.HashMap;
 import java.util.Map;
 
-@Tag(name = "Authentication", description = "토큰 재발급 API")
+@Tag(name = "토큰 재발급 API", description = "refresh token을 통해 새로운 access, refresh token 발급")
 @RestController
 @RequiredArgsConstructor
 public class ReissueController {
