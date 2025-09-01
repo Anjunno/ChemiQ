@@ -173,3 +173,26 @@ Emolink는 **IoT 기반 감정 공유 무드등 프로젝트 서비스**로,
 - Swagger UI를 통해 `/login`이 `form-data`를, `/logout`이 `json`을 요청 Body로 사용하는 것을 명확히 표현할 수 있었고, 응답 상태와 헤더까지 상세히 기술하여 협업 효율을 높일 수 있는 기반을 마련함.
 
 </details>
+
+<details>
+<summary>🗓️ 2025-09-01 - 사용자 기기 등록 API 구현 및 인증 로직 디버깅</summary>
+
+**📌 개발 일지**
+- 사용자의 무드등 기기 정보를 저장하기 위한 `Device` 엔티티를 생성하고, `Member` 엔티티와 1:1 연관관계를 설정함.
+- 기기 등록 비즈니스 로직을 처리하는 `DeviceService`를 구현함. (UUID 발급, 중복 등록 방지, DB 저장)
+- `POST /api/device/register` 엔드포인트를 `DeviceController`에 추가하고, `@AuthenticationPrincipal`을 통해 인증된 사용자 정보를 활용.
+- RESTful 원칙에 따라, 리소스 생성 성공 시 `201 Created` 상태 코드와 `Location` 헤더를 포함하여 응답하도록 구현.
+- 사용자가 이미 기기를 등록한 경우에 대한 예외 처리를 추가하고, `409 Conflict` 상태 코드를 반환하도록 함.
+- Swagger를 사용하여 API 명세를 상세히 문서화하고, `@SecurityRequirement`를 통해 JWT 인증이 필요한 API임을 명시함.
+
+**📝 개발 회고 및 트러블슈팅**
+- **트러블슈팅: `@AuthenticationPrincipal`에서 `memberNo`가 `null`로 반환되는 문제 해결**
+  - **문제점:** 기기 등록 API를 개발하던 중, `@AuthenticationPrincipal`로 주입받은 `CustomUserDetails` 객체에서 `getMemberNo()`를 호출했을 때 `null` 값이 반환되는 문제를 마주함.
+  - **원인 분석:** 원인 분석 결과, 문제는 최초 로그인 시점이 아닌, 로그인 이후의 모든 요청을 처리하는 `JWTFilter`에 있었음. 필터가 Access Token을 파싱할 때 `memberId`와 `role`만 추출하고, 정작 `memberNo`는 추출하지 않은 채 임시 `Member` 객체를 생성하여 `CustomUserDetails`를 만들고 있었음. 이 때문에 `SecurityContext`에 저장되는 인증 객체에 `memberNo` 정보가 누락되었던 것.
+  - **해결:** `JWTFilter` 로직을 수정하여 토큰에서 `memberNo` 클레임을 명시적으로 추출하고, 이 값을 포함하여 `CustomUserDetails` 객체를 생성하도록 변경하여 문제를 해결함.
+
+- **개발 회고**
+  - 이번 트러블슈팅을 통해, `UserDetailsService`가 처리하는 최초 인증 과정뿐만 아니라, `JWTFilter`에서 매 요청마다 인증 정보를 '재구성'하는 과정의 정확성이 매우 중요하다는 것을 깨달음. JWT에 담긴 정보가 `SecurityContext`까지 온전히 전달되는 흐름을 디버깅하며 이해할 수 있었던 좋은 기회였음.
+  - Postman으로 테스트 시, 수정한 `JWTFilter` 덕분에 컨트롤러에서 `memberNo`가 정상적으로 조회되는 것을 확인하였고, 이를 바탕으로 기기 등록 로직을 성공적으로 완성할 수 있었음.
+
+</details>
