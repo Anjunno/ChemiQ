@@ -57,13 +57,13 @@ public class MemberController {
             Member newMember = memberService.createMember(request);
 
             // 1. 생성된 리소스의 URI 생성
-//            URI location = URI.create("/api/members/" + newMember.getMemberNo()); // 예시 경로
+            URI location = URI.create("/api/members/" + newMember.getMemberNo()); // 예시 경로
 
             // 2. 201 Created 응답 반환
-//            return ResponseEntity.created(location)
-//                    .body(new MemberSignUpResponse("회원가입 성공"));
+            return ResponseEntity.created(location)
+                    .body(new MemberSignUpResponse("회원가입 성공"));
 
-            return ResponseEntity.ok(new MemberSignUpResponse("회원가입 성공"));
+//            return ResponseEntity.ok(new MemberSignUpResponse("회원가입 성공"));
 
         } catch (DuplicateMemberIdException e) {
             // 3. 아이디 중복 예외 처리 (409 Conflict)

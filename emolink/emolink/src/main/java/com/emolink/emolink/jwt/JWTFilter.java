@@ -83,11 +83,13 @@ public class JWTFilter extends OncePerRequestFilter {
         
 
 
-        // 토큰에서 사용자의 memberId, role 획득
+        // 토큰에서 사용자의 memberNo, memberId, role 획득
+        Long memberNo = jwtUtil.getMemberNo(accessToken);
         String memberId = jwtUtil.getMemberId(accessToken);
         String role = jwtUtil.getRole(accessToken);
 
         Member member = Member.builder()
+                .memberNo(memberNo)
                 .memberId(memberId)               // JWT에서 꺼낸, 인증된 사용자를 정확히 식별하는 ID
                 .password("임의 비밀번호")          // 실제 인증에 사용되지 않으므로 임의로 설정해도 무방
                 .nickname("임의 닉네임")            // 인증에 직접 영향 없는 값이라 임의로 넣어도 무방
