@@ -48,8 +48,6 @@ public class MemberController {
             }
     )
 
-
-
     @PostMapping("/signup")
     public ResponseEntity<?> signUp(@RequestBody MemberSignUpRequest request) {
         try {

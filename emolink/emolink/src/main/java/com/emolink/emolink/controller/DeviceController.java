@@ -28,7 +28,8 @@ public class DeviceController {
 
     @Operation(
             summary = "사용자 기기 등록",
-            description = "로그인된 사용자의 계정에 새로운 무드등 기기를 등록하고, 기기의 고유 UUID를 발급합니다."
+            description = "로그인된 사용자의 계정에 새로운 무드등 기기를 등록하고, 기기의 고유 UUID를 발급합니다.",
+            security = @SecurityRequirement(name = "JWT")
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "기기 등록 성공",
@@ -36,7 +37,7 @@ public class DeviceController {
             @ApiResponse(responseCode = "409", description = "이미 등록된 기기가 존재함",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
     })
-    @SecurityRequirement(name = "JWT")
+//    @SecurityRequirement(name = "JWT")
     @PostMapping("/device/register")
     public ResponseEntity<?> registerDeviceUuid(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         try {
@@ -50,7 +51,7 @@ public class DeviceController {
             return ResponseEntity.status(HttpStatus.CREATED).body(new DeviceRegisterResponse(uuid));
 
         } catch (IllegalStateException e) {
-            // [수정] 중복 등록 예외를 별도로 처리하여 409 Conflict 응답
+            // 중복 등록 예외를 별도로 처리하여 409 Conflict 응답
             ErrorResponse errorResponse = new ErrorResponse(HttpStatus.CONFLICT.value(), e.getMessage());
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
