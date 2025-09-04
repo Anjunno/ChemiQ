@@ -6,10 +6,13 @@ import com.emolink.emolink.entity.PartnershipStatus;
 import com.emolink.emolink.exception.MemberNotFoundException;
 import com.emolink.emolink.repository.MemberRepository;
 import com.emolink.emolink.repository.PartnershipRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -17,8 +20,6 @@ import java.util.Optional;
 public class PartnershipService {
     private final PartnershipRepository partnershipRepository;
     private final MemberRepository memberRepository;
-
-    // PartnershipService.java
 
     @Transactional
     public Partnership createRequest(Long requesterNo, String addresseeId) {
@@ -32,39 +33,48 @@ public class PartnershipService {
             throw new IllegalArgumentException("자기 자신에게 파트너 요청을 보낼 수 없습니다.");
         }
 
-        // 3. 두 사용자 사이의 기존 관계를 먼저 조회.
+
+        // 3. 요청자 또는 수신자가 이미 다른 사람과 파트너 관계(ACCEPTED)인지 먼저 확인
+        List<Long> memberNosToCheck = List.of(requesterNo, addressee.getMemberNo());
+        if (partnershipRepository.existsAcceptedPartnershipForMembers(memberNosToCheck)) {
+            throw new IllegalStateException("요청자 또는 수신자가 이미 파트너가 있는 사용자입니다.");
+        }
+
+
+        // 4. 두 사용자 사이의 기존 관계를 조회. (PENDING, CANCELED, REJECTED)
         Optional<Partnership> existingPartnershipOpt = partnershipRepository.findPartnershipBetween(requester, addressee);
 
-        // 만약 관계가 이미 존재한다면
         if (existingPartnershipOpt.isPresent()) {
             Partnership existingPartnership = existingPartnershipOpt.get();
             PartnershipStatus status = existingPartnership.getStatus();
 
-            // 3-1. 이미 파트너이거나 대기중인 요청이 있으면 예외 처리
-            if (status == PartnershipStatus.ACCEPTED) {
-                throw new IllegalStateException("이미 파트너 관계인 사용자입니다.");
-            }
+            // ACCEPTED 상태는 이미 위에서 걸렀으므로, PENDING 상태만 확인하면 됨
             if (status == PartnershipStatus.PENDING) {
-                throw new IllegalStateException("이미 처리 대기중인 파트너 요청이 존재합니다.");
+                if (existingPartnership.getRequester().equals(requester)) {
+                    throw new IllegalStateException("이미 파트너 요청을 보낸 상대입니다.");
+                } else {
+                    throw new IllegalStateException("상대방이 이미 당신에게 파트너 요청을 보냈습니다. 요청을 확인해주세요.");
+                }
             }
 
-            // 3-2. CANCELED 또는 REJECTED 상태라면, 기존 row를 재활용하여 업데이트
+            // CANCELED 또는 REJECTED 상태라면, 기존 row를 재활용하여 업데이트
             if (status == PartnershipStatus.CANCELED || status == PartnershipStatus.REJECTED) {
-                existingPartnership.setRequester(requester); // 요청자를 현재 요청한 사람으로 다시 설정
+                existingPartnership.setRequester(requester);
                 existingPartnership.setAddressee(addressee);
-                existingPartnership.setStatus(PartnershipStatus.PENDING); // 상태를 PENDING으로 변경
-                return existingPartnership; // save 호출 없이 Dirty Checking으로 업데이트됨
+                existingPartnership.setStatus(PartnershipStatus.PENDING);
+                return existingPartnership;
             }
         }
 
-        // 4. 기존 관계가 전혀 없는 경우에만 새로 생성
+        // 5. 기존 관계가 전혀 없는 경우에만 새로 생성
         Partnership newPartnership = Partnership.builder()
                 .requester(requester)
                 .addressee(addressee)
-                .build(); // status는 기본값 PENDING
+                .build();
 
         return partnershipRepository.save(newPartnership);
     }
+
     @Transactional
     public void cancelPartnership(Long memberNo) {
 
@@ -79,11 +89,32 @@ public class PartnershipService {
     }
 
     @Transactional
-    public void acceptPartnershipRequest(Long partnershipId, Long acceptingMemberNo) {
-        // 1. partnershipId로 PENDING 상태인 요청을 찾음
-        // 2. 요청을 수락하는 사람(acceptingMemberNo)이 해당 요청의 수신자(addressee)가 맞는지 확인
-        // 3. 요청자와 수신자 양쪽 모두 다른 사람과 ACCEPTED 상태의 파트너가 아닌지 다시 한번 확인 (Race Condition 방지)
-        // 4. 모든 검증 통과 시, status를 ACCEPTED로 변경
+    public void acceptPartnership(Long partnershipId, Long acceptingMemberNo) {
+
+        // 1. requestId를 사용하여 PENDING 상태인 파트너십 요청 확인.
+        Partnership partnership = partnershipRepository.findById(partnershipId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 파트너 요청을 찾을 수 없습니다."));
+
+        // 2. 요청의 상태가 PENDING이 맞는지 확인.
+        if (partnership.getStatus() != PartnershipStatus.PENDING) {
+            throw new IllegalStateException("이미 처리되었거나 유효하지 않은 요청입니다.");
+        }
+
+        // 3. 요청을 수락하려는 사용자(acceptingMemberNo)가 해당 요청의 수신자(addressee)가 맞는지 확인. (보안)
+        if (!partnership.getAddressee().getMemberNo().equals(acceptingMemberNo)) {
+            throw new AccessDeniedException("요청을 수락할 권한이 없습니다.");
+        }
+
+        Member requester = partnership.getRequester();
+
+        // 4. 요청자와 수신자가 그 사이에 다른 사람과 파트너가 되었는지 확인 (경쟁 상태 방지)
+        List<Long> memberNosToCheck = List.of(requester.getMemberNo(), acceptingMemberNo);
+        if (partnershipRepository.existsAcceptedPartnershipForMembers(memberNosToCheck)) {
+            throw new IllegalStateException("요청자 또는 수신자가 이미 다른 파트너와 연결되었습니다.");
+        }
+
+        // 5. 모든 검증을 통과하면, 상태를 ACCEPTED로 변경.
+        partnership.setStatus(PartnershipStatus.ACCEPTED);
     }
 
     @Transactional

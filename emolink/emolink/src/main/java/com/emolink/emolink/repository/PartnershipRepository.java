@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -25,11 +25,11 @@ public interface PartnershipRepository extends JpaRepository<Partnership, Long> 
 
 
     @Query("SELECT p FROM Partnership p WHERE " +
-            "(p.requester = :userA AND p.addressee = :userB) OR " +
-            "(p.requester = :userB AND p.addressee = :userA)")
+            "(p.requester = :memberA AND p.addressee = :memberB) OR " +
+            "(p.requester = :memberB AND p.addressee = :memberA)")
     Optional<Partnership> findPartnershipBetween(
-            @Param("userA") Member userA,
-            @Param("userB") Member userB
+            @Param("memberA") Member memberA,
+            @Param("memberB") Member memberB
     );
 
 
@@ -37,4 +37,10 @@ public interface PartnershipRepository extends JpaRepository<Partnership, Long> 
     @Query("SELECT p FROM Partnership p WHERE p.status = 'ACCEPTED' AND " +
             "(p.requester.memberNo = :memberNo OR p.addressee.memberNo = :memberNo)")
     Optional<Partnership> findAcceptedPartnershipByMemberNo(@Param("memberNo") Long memberNo);
+
+    // 여러 명의 memberNo 중에서 ACCEPTED 상태인 파트너십이 하나라도 있는지 확인
+    @Query("SELECT count(p) > 0 FROM Partnership p WHERE p.status = 'ACCEPTED' AND " +
+            "(p.requester.memberNo IN :memberNos OR p.addressee.memberNo IN :memberNos)")
+    boolean existsAcceptedPartnershipForMembers(@Param("memberNos") List<Long> memberNos);
+
 }

@@ -12,9 +12,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import org.springframework.web.bind.annotation.*;
@@ -101,6 +103,49 @@ public class PartnershipController {
 
         } catch (IllegalStateException e) {
             // 서비스에서 "파트너가 없다"는 예외를 던진 경우 (409 Conflict)
+            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.CONFLICT.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+        }
+
+    }
+
+
+    @Operation(
+            summary = "파트너 요청 수락",
+            description = "로그인된 사용자가 자신에게 온 파트너 요청을 수락하여, 두 사용자 간의 파트너 관계를 최종적으로 형성합니다. 요청의 상태가 'PENDING'에서 'ACCEPTED'로 변경됩니다.",
+            security = @SecurityRequirement(name = "JWT"),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "파트너 요청 수락 성공"),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 파트너십 요청 (잘못된 requestId)",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "403", description = "해당 요청을 수락할 권한이 없음 (요청의 수신자가 아님)",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "409", description = "요청을 수락할 수 없는 상태 (예: 이미 처리된 요청, 상대방이 다른 파트너와 연결됨)",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            }
+    )
+    // 파트너 관계 수락
+    @PostMapping("/partnership/{partnershipId}/accept")
+    public ResponseEntity<?> acceptPartnershipRequest(@AuthenticationPrincipal CustomUserDetails customUserDetails,
+                                                      @PathVariable Long partnershipId) {
+        try{
+            // 수락하는 주체(파트너 요청 받은 사람)
+            Long addresseeNo = customUserDetails.getMemberNo();
+            partnershipService.acceptPartnership(partnershipId, addresseeNo);
+
+            return ResponseEntity.ok("파트너 요청을 수락했습니다.");
+        } catch (EntityNotFoundException e) {
+            // 실패 1: 해당 요청을 찾을 수 없음 (404 NOT_FOUND)
+            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+
+        } catch (AccessDeniedException e) {
+            // 실패 2: 요청을 수락할 권한이 없음 (403 FORBIDDEN)
+            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.FORBIDDEN.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+
+        } catch (IllegalStateException e) {
+            // 실패 3: 이미 처리된 요청이거나, 누군가 이미 파트너가 있음 (409 Conflict)
             ErrorResponse errorResponse = new ErrorResponse(HttpStatus.CONFLICT.value(), e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
         }
