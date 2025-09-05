@@ -118,9 +118,20 @@ public class PartnershipService {
     }
 
     @Transactional
-    public void rejectPartnershipRequest(Long partnershipId, Long rejectingMemberNo) {
-        // 1. partnershipId로 PENDING 상태인 요청을 찾음
+    public void rejectPartnership(Long partnershipId, Long rejectingMemberNo) {
+        // 1. partnershipId로 해당 요청을 찾음
+        Partnership partnership = partnershipRepository.findById(partnershipId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 파트너 요청을 찾을 수 없습니다."));
+
+        // 2. 요청의 상태가 PENDING이 맞는지 확인.
+        if (partnership.getStatus() != PartnershipStatus.PENDING) {
+            throw new IllegalStateException("이미 처리되었거나 유효하지 않은 요청입니다.");
+        }
         // 2. 요청을 거절하는 사람이 수신자가 맞는지 확인
+        if (!partnership.getAddressee().getMemberNo().equals(rejectingMemberNo)) {
+            throw new AccessDeniedException("요청을 거절할 권한이 없습니다.");
+        }
         // 3. status를 REJECTED로 변경
+        partnership.setStatus(PartnershipStatus.REJECTED);
     }
 }

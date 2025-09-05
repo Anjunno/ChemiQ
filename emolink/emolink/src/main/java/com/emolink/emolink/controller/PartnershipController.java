@@ -52,7 +52,7 @@ public class PartnershipController {
             }
     )
     //파트너 요청
-    @PostMapping("/partnership/request")
+    @PostMapping("/partnerships/requests")
     public ResponseEntity<?> createPartnershipRequest(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                     @RequestBody PartnershipRequest partnershipRequest) {
         try{
@@ -92,7 +92,7 @@ public class PartnershipController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             }
     )
-    @DeleteMapping("/partnership")
+    @DeleteMapping("/partnerships")
     // 파트너 관계 해제
     public ResponseEntity<?> deletePartnership(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         try {
@@ -125,7 +125,7 @@ public class PartnershipController {
             }
     )
     // 파트너 관계 수락
-    @PostMapping("/partnership/{partnershipId}/accept")
+    @PostMapping("/partnerships/requests/{partnershipId}/accept")
     public ResponseEntity<?> acceptPartnershipRequest(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                                       @PathVariable Long partnershipId) {
         try{
@@ -150,5 +150,47 @@ public class PartnershipController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
         }
 
+    }
+
+    @Operation(
+            summary = "파트너 요청 거절",
+            description = "로그인된 사용자가 자신에게 온 파트너 요청을 거절합니다. 성공 시 관계의 상태는 'REJECTED'로 변경됩니다.",
+            security = @SecurityRequirement(name = "JWT"),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "파트너 요청 거절 성공",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(type = "string", example = "파트너 요청을 거절했습니다."))),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 파트너십 요청 (잘못된 ID)",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "403", description = "해당 요청을 거절할 권한이 없음 (요청의 수신자가 아님)",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "409", description = "이미 처리된 요청이라 거절할 수 없음 (예: 이미 수락됨)",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            }
+    )
+    @DeleteMapping("/partnerships/requests/{partnershipId}")
+    public ResponseEntity<?> rejectPartnershipRequest(@AuthenticationPrincipal CustomUserDetails customUserDetails,
+                                                      @PathVariable Long partnershipId) {
+
+        try{ // 수락하는 주체(파트너 요청 받은 사람)
+            Long addresseeNo = customUserDetails.getMemberNo();
+            partnershipService.rejectPartnership(partnershipId, addresseeNo);
+
+            return ResponseEntity.ok("파트너 요청을 거절했습니다.");
+        } catch (EntityNotFoundException e) {
+            // 실패 1: 해당 요청을 찾을 수 없음 (404 NOT_FOUND)
+            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+
+        } catch (AccessDeniedException e) {
+            // 실패 2: 요청을 거절할 권한이 없음 (403 FORBIDDEN)
+            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.FORBIDDEN.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+
+        } catch (IllegalStateException e) {
+            // 실패 3: 이미 처리된 요청이거나, 유효한 요청이 아님 (409 Conflict)
+            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.CONFLICT.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+        }
     }
 }
