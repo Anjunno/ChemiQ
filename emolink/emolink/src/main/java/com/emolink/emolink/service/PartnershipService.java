@@ -1,5 +1,6 @@
 package com.emolink.emolink.service;
 
+import com.emolink.emolink.DTO.PartnershipPartnerResponse;
 import com.emolink.emolink.DTO.PartnershipReceiveResponse;
 import com.emolink.emolink.DTO.PartnershipSentResponse;
 import com.emolink.emolink.entity.Member;
@@ -161,5 +162,23 @@ public class PartnershipService {
         return pendingList.stream()
                 .map(PartnershipSentResponse::new)
                 .collect(Collectors.toList());
+
+    }
+
+    @Transactional(readOnly = true)
+    public PartnershipPartnerResponse findPartnerInfo(Long memberNo) {
+
+        // DB에서 memberNo가 속한 파트너 관계 조회
+        Partnership partnership = partnershipRepository.findAcceptedPartnershipByMemberNo(memberNo)
+                .orElseThrow(() -> new EntityNotFoundException("해당 사용자와 파트너를 관계를 맺은 사용자가 없습니다."));
+
+        // 내가(memberNo) 요청자(requester)이면, 상대방(addressee)을 파트너로 반환.
+        // 내가 요청자가 아니면, 나는 수신자(addressee)이므로 요청자(requester)를 파트너로 반환.
+        Member partner = partnership.getRequester().getMemberNo().equals(memberNo)
+                ? partnership.getAddressee()
+                : partnership.getRequester();
+
+        return new PartnershipPartnerResponse(partner);
+
     }
 }

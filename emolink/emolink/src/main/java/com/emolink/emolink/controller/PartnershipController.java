@@ -1,10 +1,6 @@
 package com.emolink.emolink.controller;
 
-import com.emolink.emolink.DTO.CustomUserDetails;
-import com.emolink.emolink.DTO.ErrorResponse;
-import com.emolink.emolink.DTO.PartnershipReceiveResponse;
-import com.emolink.emolink.DTO.PartnershipSentResponse;
-import com.emolink.emolink.DTO.PartnershipRequest;
+import com.emolink.emolink.DTO.*;
 import com.emolink.emolink.entity.Partnership;
 import com.emolink.emolink.exception.MemberNotFoundException;
 import com.emolink.emolink.service.PartnershipService;
@@ -130,6 +126,7 @@ public class PartnershipController {
     )
     // 파트너 관계 수락
     @PostMapping("/partnerships/requests/{partnershipId}/accept")
+    // 파트너 관계 수락
     public ResponseEntity<?> acceptPartnershipRequest(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                                       @PathVariable Long partnershipId) {
         try{
@@ -173,6 +170,7 @@ public class PartnershipController {
             }
     )
     @DeleteMapping("/partnerships/requests/{partnershipId}")
+    //파트너 관계 거절
     public ResponseEntity<?> rejectPartnershipRequest(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                                       @PathVariable Long partnershipId) {
 
@@ -210,6 +208,7 @@ public class PartnershipController {
             }
     )
     @GetMapping("/partnerships/requests/received")
+    // 받은 파트너 요청 조회
     public ResponseEntity<?> getReceivedRequests(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
         List<PartnershipReceiveResponse> recivedList = partnershipService.searchReciveList(customUserDetails.getMemberNo());
@@ -229,9 +228,41 @@ public class PartnershipController {
             }
     )
     @GetMapping("/partnerships/requests/sent")
+    // 보낸 파트너 요청 조회
     public ResponseEntity<?> getSentRequests(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         List<PartnershipSentResponse> sentList = partnershipService.searchSentList(customUserDetails.getMemberNo());
 
         return ResponseEntity.ok(sentList);
+    }
+
+
+    @Operation(
+            summary = "현재 파트너 정보 조회",
+            description = "로그인된 사용자의 현재 파트너(ACCEPTED 상태) 정보를 조회합니다.",
+            security = @SecurityRequirement(name = "JWT"),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "파트너 정보 조회 성공",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = PartnershipPartnerResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "파트너 관계가 존재하지 않음",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class)))
+            }
+    )
+    // 사용자의 파트너 정보를 받아옴
+    @GetMapping("/partnerships")
+    // 자신의 파트너 정보 조회
+    public ResponseEntity<?> getPartnership(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+        try {
+
+            PartnershipPartnerResponse partnerInfo = partnershipService.findPartnerInfo(customUserDetails.getMemberNo());
+            return ResponseEntity.ok(partnerInfo);
+
+        } catch (EntityNotFoundException e) {
+            // 실패 1: 해당 요청을 찾을 수 없음 (404 NOT_FOUND)
+            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        }
     }
 }
