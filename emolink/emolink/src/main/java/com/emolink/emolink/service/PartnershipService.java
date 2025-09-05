@@ -1,5 +1,6 @@
 package com.emolink.emolink.service;
 
+import com.emolink.emolink.DTO.PartnershipReceiveResponse;
 import com.emolink.emolink.entity.Member;
 import com.emolink.emolink.entity.Partnership;
 import com.emolink.emolink.entity.PartnershipStatus;
@@ -12,8 +13,10 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -133,5 +136,17 @@ public class PartnershipService {
         }
         // 3. status를 REJECTED로 변경
         partnership.setStatus(PartnershipStatus.REJECTED);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PartnershipReceiveResponse> searchReciveList(Long memberNo) {
+
+        // DB에서 Entity 리스트를 조회
+        List<Partnership> pendingList = partnershipRepository.findByAddressee_MemberNoAndStatus(memberNo, PartnershipStatus.PENDING);
+
+        // Entity 리스트를 DTO 리스트로 변환하여 반환
+        return pendingList.stream()
+                .map(PartnershipReceiveResponse::new) // .map(p -> new PartnershipReceiveResponse(p))와 동일
+                .collect(Collectors.toList());
     }
 }

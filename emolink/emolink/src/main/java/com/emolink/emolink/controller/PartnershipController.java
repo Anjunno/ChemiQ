@@ -2,11 +2,13 @@ package com.emolink.emolink.controller;
 
 import com.emolink.emolink.DTO.CustomUserDetails;
 import com.emolink.emolink.DTO.ErrorResponse;
+import com.emolink.emolink.DTO.PartnershipReceiveResponse;
 import com.emolink.emolink.DTO.PartnershipRequest;
 import com.emolink.emolink.entity.Partnership;
 import com.emolink.emolink.exception.MemberNotFoundException;
 import com.emolink.emolink.service.PartnershipService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -22,6 +24,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -192,5 +195,24 @@ public class PartnershipController {
             ErrorResponse errorResponse = new ErrorResponse(HttpStatus.CONFLICT.value(), e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
         }
+    }
+
+    @Operation(
+            summary = "받은 파트너 요청 목록 조회",
+            description = "현재 로그인한 사용자가 다른 사용자들로부터 받은, 'PENDING' 상태인 파트너 요청 목록을 조회합니다.",
+            security = @SecurityRequirement(name = "JWT"),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "요청 목록 조회 성공",
+                            content = @Content(mediaType = "application/json",
+                                    // 응답이 리스트(배열) 형태임을 명시합니다.
+                                    array = @ArraySchema(schema = @Schema(implementation = PartnershipReceiveResponse.class)))),
+            }
+    )
+    @GetMapping("/partnerships/requests/received")
+    public ResponseEntity<?> getReceivedRequests(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+        List<PartnershipReceiveResponse> recivedList = partnershipService.searchReciveList(customUserDetails.getMemberNo());
+
+        return ResponseEntity.ok(recivedList);
     }
 }

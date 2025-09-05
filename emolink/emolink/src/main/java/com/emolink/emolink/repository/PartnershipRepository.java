@@ -43,4 +43,10 @@ public interface PartnershipRepository extends JpaRepository<Partnership, Long> 
             "(p.requester.memberNo IN :memberNos OR p.addressee.memberNo IN :memberNos)")
     boolean existsAcceptedPartnershipForMembers(@Param("memberNos") List<Long> memberNos);
 
+
+//    @Query("SELECT p FROM Partnership p WHERE p.status = 'PENDING' AND p.addressee = :memberNo")
+//    Optional<List<Partnership>> findAllPendingByAddresseeNo(@Param("memberNo") Long memberNo);
+
+    // addressee의 memberNo가 일치하고, status가 일치하는 Partnership을 모두 조회하는 메서드
+    List<Partnership> findByAddressee_MemberNoAndStatus(Long memberNo, PartnershipStatus status);
 }
