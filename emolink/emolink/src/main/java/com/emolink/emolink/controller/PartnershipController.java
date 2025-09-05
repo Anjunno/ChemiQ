@@ -3,6 +3,7 @@ package com.emolink.emolink.controller;
 import com.emolink.emolink.DTO.CustomUserDetails;
 import com.emolink.emolink.DTO.ErrorResponse;
 import com.emolink.emolink.DTO.PartnershipReceiveResponse;
+import com.emolink.emolink.DTO.PartnershipSentResponse;
 import com.emolink.emolink.DTO.PartnershipRequest;
 import com.emolink.emolink.entity.Partnership;
 import com.emolink.emolink.exception.MemberNotFoundException;
@@ -214,5 +215,23 @@ public class PartnershipController {
         List<PartnershipReceiveResponse> recivedList = partnershipService.searchReciveList(customUserDetails.getMemberNo());
 
         return ResponseEntity.ok(recivedList);
+    }
+
+
+    @Operation(
+            summary = "보낸 파트너 요청 목록 조회",
+            description = "현재 로그인한 사용자가 다른 사용자들에게 요청한 파트너 요청 목록을 조회합니다.",
+            security = @SecurityRequirement(name = "JWT"),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "요청 목록 조회 성공",
+                            content = @Content(mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = PartnershipSentResponse.class)))),
+            }
+    )
+    @GetMapping("/partnerships/requests/sent")
+    public ResponseEntity<?> getSentRequests(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        List<PartnershipSentResponse> sentList = partnershipService.searchSentList(customUserDetails.getMemberNo());
+
+        return ResponseEntity.ok(sentList);
     }
 }

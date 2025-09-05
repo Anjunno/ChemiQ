@@ -1,6 +1,7 @@
 package com.emolink.emolink.service;
 
 import com.emolink.emolink.DTO.PartnershipReceiveResponse;
+import com.emolink.emolink.DTO.PartnershipSentResponse;
 import com.emolink.emolink.entity.Member;
 import com.emolink.emolink.entity.Partnership;
 import com.emolink.emolink.entity.PartnershipStatus;
@@ -147,6 +148,18 @@ public class PartnershipService {
         // Entity 리스트를 DTO 리스트로 변환하여 반환
         return pendingList.stream()
                 .map(PartnershipReceiveResponse::new) // .map(p -> new PartnershipReceiveResponse(p))와 동일
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<PartnershipSentResponse> searchSentList(Long memberNo) {
+
+        // DB에서 Entity 리스트를 조회
+        List<Partnership> pendingList = partnershipRepository.findByRequester_MemberNo(memberNo);
+
+        // Entity 리스트를 DTO 리스트로 변환하여 반환
+        return pendingList.stream()
+                .map(PartnershipSentResponse::new)
                 .collect(Collectors.toList());
     }
 }
