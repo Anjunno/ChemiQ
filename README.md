@@ -240,3 +240,31 @@ Emolink는 **IoT 기반 감정 공유 무드등 프로젝트 서비스**로,
 - Swagger UI를 사용하여 수락 기능의 다양한 시나리오(정상 수락, 권한 없는 사용자의 수락 시도, 이미 파트너가 있는 경우)를 테스트하며 방어 로직이 견고하게 동작함을 확인함으로써 코드에 대한 확신을 얻을 수 있었습니다.
 
 </details>
+
+<details>
+<summary>🗓️ 2025-09-05 - 파트너십 관리 기능 구현 (조회, 거절, 취소)</summary>
+
+**📌 개발 일지**
+- **파트너십 조회 기능 (3종)**
+  - `GET /partnerships/requests/received`: 로그인한 사용자가 받은 `PENDING` 상태의 요청 목록을 조회하는 API를 구현함.
+  - `GET /partnerships/requests/sent`: 로그인한 사용자가 보낸 요청들의 목록과 현재 상태(`PENDING`, `ACCEPTED` 등)를 조회하는 API를 구현함.
+  - `GET /partnerships`: 현재 `ACCEPTED` 상태인 파트너의 정보를 조회하는 API를 구현함.
+- **파트너십 요청 처리 기능 (2종)**
+  - `DELETE /partnerships/requests/{partnershipId}/reject`: 받은 파트너 요청을 거절하는 기능을 구현.
+  - `DELETE /partnerships/requests/{partnershipId}/cancel`: 내가 보낸 파트너 요청을 취소하는 기능을 구현.
+- **공통 작업**
+  - 각 기능에 필요한 서비스 로직(`PartnershipService`) 및 커스텀 Repository 쿼리를 작성함.
+  - 기능별 요청/응답에 맞는 DTO를 설계하고 적용함.
+  - 각 API의 성공 및 모든 예외 케이스(403, 404, 409 등)에 대한 컨트롤러 로직과 Swagger 문서를 상세히 작성함.
+
+**📝 개발 회고 및 트러블슈팅**
+
+- **트러블슈팅 : API URI 설계의 일관성 문제**
+  - **문제점:** '요청 거절'과 '요청 취소'는 서버 내부 동작은 다르지만, 사용자 입장에서는 '요청을 없앤다'는 비슷한 맥락의 행위였음. 초기에는 이를 다른 HTTP 메소드나 경로로 설계할지 고민함.
+  - **해결:** 사용자 경험의 일관성을 위해, 두 기능 모두 **`DELETE /partnerships/requests/{partnershipId}`** 라는 동일한 형태의 URI를 사용하기로 결정함. 대신 서비스 로직 내부에서 요청을 보낸 사람(`requester`)과 요청을 받은 사람(`addressee`)을 구분하여 각각 `CANCELED`와 `REJECTED` 상태로 처리하도록 구현하여 API의 일관성과 명확성을 모두 잡음.
+
+- **개발 회고:**
+  - 파트너십 기능은 단순한 CRUD를 넘어, `PENDING` -> `ACCEPTED` -> `CANCELED` 등으로 변화하는 '상태(State)'를 관리하는 것이 핵심임을 깨달음. 각 상태에서 가능한 행위와 불가능한 행위를 정의하고, 모든 엣지 케이스를 방어하는 것이 서비스의 안정성을 크게 높인다는 것을 체감함.
+  - Swagger UI의 'Authorize' 기능을 적극적으로 활용하여, 수락/거절/취소 권한이 없는 사용자의 접근(`403`), 이미 처리된 요청에 대한 중복 처리(`409`) 등 다양한 시나리오를 직접 테스트하며 로직의 완성도를 높일 수 있었음.
+
+</details>
