@@ -38,6 +38,17 @@ public interface PartnershipRepository extends JpaRepository<Partnership, Long> 
             "(p.requester.memberNo = :memberNo OR p.addressee.memberNo = :memberNo)")
     Optional<Partnership> findAcceptedPartnershipByMemberNo(@Param("memberNo") Long memberNo);
 
+
+
+    //memberNo와 partnershipId로 요청자가 memberNo이고 PENDING 상태인 파트너십 엔티티를 직접 조회하는 메소드
+//    @Query("SELECT p FROM Partnership p WHERE p.status = 'PENDING' AND " +
+//            "(p.requester.memberNo = :memberNo AND p.id = :partnershipId)")
+//    Optional<Partnership> findPendingPartnershipByMemberNoAndPartnershipId(
+//            @Param("partnershipId") Long partnershipId,
+//            @Param("memberNo") Long memberNo);
+
+    Optional<Partnership> findByIdAndRequester_MemberNoAndStatus(Long id, Long memberNo, PartnershipStatus status);
+
     // 여러 명의 memberNo 중에서 ACCEPTED 상태인 파트너십이 하나라도 있는지 확인
     @Query("SELECT count(p) > 0 FROM Partnership p WHERE p.status = 'ACCEPTED' AND " +
             "(p.requester.memberNo IN :memberNos OR p.addressee.memberNo IN :memberNos)")

@@ -181,4 +181,25 @@ public class PartnershipService {
         return new PartnershipPartnerResponse(partner);
 
     }
+
+
+    @Transactional
+    public void cancelRequest(Long partnershipId, Long memberNo) {
+        // 1. partnershipId로 파트너십 요청이 존재하는지 먼저 확인.
+        Partnership partnership = partnershipRepository.findById(partnershipId)
+                .orElseThrow(() -> new EntityNotFoundException("ID가 " + partnershipId + "인 파트너 요청을 찾을 수 없습니다."));
+
+        // 2. 로그인한 사용자가 해당 요청의 주인(requester)이 맞는지 확인.
+        if (!partnership.getRequester().getMemberNo().equals(memberNo)) {
+            throw new AccessDeniedException("해당 요청을 취소할 권한이 없습니다.");
+        }
+
+        // 3. 해당 요청이 PENDING 상태가 맞는지 확인.
+        if (partnership.getStatus() != PartnershipStatus.PENDING) {
+            throw new IllegalStateException("이미 취소되었거나 거절된 요청입니다.");
+        }
+
+        // 4. 모든 검증을 통과하면, 상태를 CANCELED로 변경.
+        partnership.setStatus(PartnershipStatus.CANCELED);
+    }
 }

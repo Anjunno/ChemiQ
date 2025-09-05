@@ -169,7 +169,7 @@ public class PartnershipController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             }
     )
-    @DeleteMapping("/partnerships/requests/{partnershipId}")
+    @DeleteMapping("/partnerships/requests/{partnershipId}/reject")
     //파트너 관계 거절
     public ResponseEntity<?> rejectPartnershipRequest(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                                       @PathVariable Long partnershipId) {
@@ -263,6 +263,48 @@ public class PartnershipController {
             // 실패 1: 해당 요청을 찾을 수 없음 (404 NOT_FOUND)
             ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND.value(), e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        }
+    }
+
+
+    @Operation(
+            summary = "보낸 파트너 요청 취소",
+            description = "로그인된 사용자가 보냈던 파트너 요청(PENDING 상태)을 취소합니다. 성공 시 관계의 상태는 'CANCELED'로 변경됩니다.",
+            security = @SecurityRequirement(name = "JWT"),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "요청 취소 성공",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(type = "string", example = "파트너 요청이 취소되었습니다."))),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 파트너십 요청 (잘못된 ID)",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "403", description = "해당 요청을 취소할 권한이 없음 (요청자가 아님)",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "409", description = "취소할 수 없는 상태의 요청 (예: 이미 수락됨)",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            }
+    )
+    @DeleteMapping("/partnerships/requests/{partnershipId}/cancel")
+    // 보낸 요청 취소
+    public ResponseEntity<?> cancelPartnershipRequest(@AuthenticationPrincipal CustomUserDetails customUserDetails,
+                                             @PathVariable Long partnershipId) {
+        try {
+            partnershipService.cancelRequest(partnershipId, customUserDetails.getMemberNo());
+            return ResponseEntity.ok("파트너 요청이 취소되었습니다.");
+
+        } catch (EntityNotFoundException e) {
+            // 1. 요청 ID가 잘못된 경우
+            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+
+        } catch (AccessDeniedException e) {
+            // 2. 내 요청이 아닌 경우
+            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.FORBIDDEN.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+
+        } catch (IllegalStateException e) {
+            // 3. 이미 처리된 요청인 경우
+            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.CONFLICT.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
         }
     }
 }
