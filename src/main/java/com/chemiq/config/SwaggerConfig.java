@@ -17,8 +17,8 @@ public class SwaggerConfig {
     public OpenAPI emolinkOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Emolink API 문서")
-                        .description("감정 공유 무드등 서비스 API 명세서")
+                        .title("ChemiQ API 문서")
+                        .description(" 1:1 미션 공유 서비스 API 명세서")
                         .version("v1.0.0")
                 )
                 .servers(List.of(

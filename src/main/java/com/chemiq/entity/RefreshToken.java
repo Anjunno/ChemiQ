@@ -21,8 +21,10 @@ public class RefreshToken {
     @JoinColumn(name = "member_no", nullable = false)
     private Member member;
 
+    @Column(nullable = false, unique = true)
     private String refreshToken;
 
+    @Column(nullable = false)
     private LocalDateTime expiration;
 
 }

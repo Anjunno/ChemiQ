@@ -27,8 +27,8 @@ public class Member {
     @Column(nullable = false)
     private String nickname;
 
-    @OneToOne(mappedBy = "member", fetch = FetchType.LAZY)
-    private Device device;
+//    @OneToOne(mappedBy = "member", fetch = FetchType.LAZY)
+//    private Device device;
 
     private String role;
 
