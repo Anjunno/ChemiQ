@@ -12,8 +12,8 @@ import java.util.List;
 
 @Configuration
 public class SwaggerConfig {
-    @Value("${server.address}")
-    private String serverAddress;
+    @Value("${swagger.server.url}")
+    private String swaggerServerUrl;
 
     @Bean
     public OpenAPI emolinkOpenAPI() {
@@ -28,9 +28,7 @@ public class SwaggerConfig {
                            .url("http://localhost:8080")
                            .description("개발용 서버"),
 
-                   new Server()
-                           .url("http://" + serverAddress + ":" + "8080")
-                           .description("EC2 서버")
+                   new Server().url(swaggerServerUrl).description("EC2 서버")
                 ))
                 .components(new Components()
                         .addSecuritySchemes("JWT", new SecurityScheme()
