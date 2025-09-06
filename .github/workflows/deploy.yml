@@ -47,7 +47,7 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean bootJar -x test
         working-directory: ./
-        
+
       # 6️⃣ 빌드된 JAR 파일을 EC2 서버로 복사 (scp 사용)
       - name: Copy JAR to EC2
         uses: appleboy/scp-action@v0.1.4
@@ -58,7 +58,7 @@ jobs:
           port: 22
           source: "build/libs/chemiq.jar"
           target: "/home/ubuntu/chemiq/"
-#          strip_components: 3
+          strip_components: 2
 
       # 7️⃣ EC2 서버에서 Spring Boot 서비스 재시작 (ssh 사용)
       - name: Restart app on EC2
