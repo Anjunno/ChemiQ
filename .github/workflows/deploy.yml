@@ -1,0 +1,72 @@
+# GitHub Actions 워크플로: EC2에 Spring Boot 애플리케이션 자동 배포
+
+# 워크플로 이름.
+name: Deploy to EC2
+
+# 언제 실행할지 트리거 설정
+on:
+  push:
+    branches: [ main ]  # main 브랜치에 push 발생 시 자동 실행
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest  # GitHub Actions에서 사용할 가상 머신 환경
+
+    steps:
+      # 1️⃣ GitHub 저장소의 코드 체크아웃 (코드 다운로드)
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      # 2️⃣ JDK 21 설치 (Spring Boot 빌드용)
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+
+      # 4️⃣ Gradle wrapper 실행 권한 부여
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        working-directory: ./
+
+      # # ✅ 추가: Gradle version 확인
+      # - name: Show Gradle version
+      #   run: ./gradlew --version
+      #   working-directory: ./ajs
+
+      # - name: Dependency insight (for mysql)
+      #   run: ./gradlew dependencyInsight --configuration runtimeClasspath --dependency mysql
+      #   working-directory: ./ajs
+
+
+      # 5️⃣ Gradle 빌드 실행 (테스트 단계는 생략)
+      - name: Build with Gradle
+        run: ./gradlew clean bootJar -x test
+        working-directory: ./
+        
+      # 6️⃣ 빌드된 JAR 파일을 EC2 서버로 복사 (scp 사용)
+      - name: Copy JAR to EC2
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          port: 22
+          source: "build/libs/chemiq.jar"
+          target: "/home/ubuntu/chemiq/"
+          strip_components: 3
+
+      # 7️⃣ EC2 서버에서 Spring Boot 서비스 재시작 (ssh 사용)
+      - name: Restart app on EC2
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          port: 22
+          script: |
+            sudo systemctl restart chemiq.service
