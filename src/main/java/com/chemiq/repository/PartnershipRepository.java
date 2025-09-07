@@ -32,6 +32,9 @@ public interface PartnershipRepository extends JpaRepository<Partnership, Long> 
             @Param("memberB") Member memberB
     );
 
+    // 특정 상태의 상태인 모든 파트너십 목록을 조회
+    List<Partnership> findAllByStatus(PartnershipStatus status);
+
 
     //memberNo로 ACCEPTED 상태인 파트너십 엔티티를 직접 조회하는 메소드
     @Query("SELECT p FROM Partnership p WHERE p.status = 'ACCEPTED' AND " +
