@@ -37,8 +37,7 @@ public class MissionController {
                                     schema = @Schema(implementation = TodayMissionResponse.class))),
                     @ApiResponse(responseCode = "404", description = "파트너 관계가 아니거나 오늘 할당된 미션이 없음",
                             content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = ErrorResponse.class))),
-                    @ApiResponse(responseCode = "401", description = "인증 실패 (유효하지 않은 토큰 등)")
+                                    schema = @Schema(implementation = ErrorResponse.class)))
             }
     )
     // 오늘의 미션 조회
