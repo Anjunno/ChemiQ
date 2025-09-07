@@ -1,5 +1,6 @@
 package com.chemiq.service;
 
+import com.chemiq.DTO.TodayMissionResponse;
 import com.chemiq.entity.DailyMission;
 import com.chemiq.entity.Mission;
 import com.chemiq.entity.Partnership;
@@ -7,6 +8,7 @@ import com.chemiq.entity.PartnershipStatus;
 import com.chemiq.repository.DailyMissionRepository;
 import com.chemiq.repository.MissionRepository;
 import com.chemiq.repository.PartnershipRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -73,5 +75,22 @@ public class MissionService {
         // 4. 생성된 DailyMission들을 DB에 한 번에 저장.
         dailyMissionRepository.saveAll(dailyMissions);
         log.info("{} 날짜의 미션이 {}개의 파트너십에 성공적으로 할당되었습니다.", today, dailyMissions.size());
+    }
+
+    // 오늘의 미션 요청 메서드
+    public TodayMissionResponse getTodayMission(Long memberNo) {
+
+        // 1. 파트너 존재여부 확인
+        Partnership partnership = partnershipRepository.findAcceptedPartnershipByMemberNo(memberNo)
+                .orElseThrow(() -> new EntityNotFoundException("파트너가 존재하지 않습니다."));
+
+
+        // 2. 해당 파트너십의 오늘의 미션
+        LocalDate today = LocalDate.now();
+        DailyMission todayMission = dailyMissionRepository.findByPartnershipAndMissionDate(partnership,today)
+                .orElseThrow(() -> new EntityNotFoundException("오늘 할당된 미션이 없습니다."));
+
+        // 3. 미션 내용 반환
+        return new TodayMissionResponse(todayMission.getMission());
     }
 }
