@@ -9,5 +9,6 @@ import java.util.Optional;
 
 public interface DailyMissionRepository extends JpaRepository<DailyMission, Long> {
 
+    //미션 날짜와 파트너십으로 해당 날짜 미션 찾
     Optional<DailyMission> findByPartnershipAndMissionDate(Partnership partnership, LocalDate today);
 }
