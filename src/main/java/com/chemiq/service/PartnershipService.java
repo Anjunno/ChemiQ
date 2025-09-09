@@ -11,12 +11,16 @@ import com.chemiq.repository.MemberRepository;
 import com.chemiq.repository.PartnershipRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,6 +29,7 @@ public class PartnershipService {
     private final PartnershipRepository partnershipRepository;
     private final MemberRepository memberRepository;
 
+    private static final Logger log = LoggerFactory.getLogger(PartnershipService.class);
     @Transactional
     public Partnership createRequest(Long requesterNo, String addresseeId) {
         // 1. 요청자와 수신자 엔티티를 모두 가져옵니다.
@@ -109,16 +114,38 @@ public class PartnershipService {
             throw new AccessDeniedException("요청을 수락할 권한이 없습니다.");
         }
 
-        Member requester = partnership.getRequester();
 
-        // 4. 요청자와 수신자가 그 사이에 다른 사람과 파트너가 되었는지 확인 (경쟁 상태 방지)
-        List<Long> memberNosToCheck = List.of(requester.getMemberNo(), acceptingMemberNo);
+        // --- 경쟁 상태(Race Condition) 방지 로직 ---
+        Member requester = partnership.getRequester();
+        Member addressee = partnership.getAddressee(); // acceptingMemberNo에 해당하는 Member 객체
+
+        List<Long> memberNosToCheck = List.of(requester.getMemberNo(), addressee.getMemberNo());
         if (partnershipRepository.existsAcceptedPartnershipForMembers(memberNosToCheck)) {
-            throw new IllegalStateException("요청자 또는 수신자가 이미 다른 파트너와 연결되었습니다.");
+            throw new IllegalStateException("요청자 또는 수락자가 그 사이에 이미 다른 파트너와 연결되었습니다.");
         }
 
-        // 5. 모든 검증을 통과하면, 상태를 ACCEPTED로 변경.
+        // 4. 상태를 ACCEPTED로 변경
         partnership.setStatus(PartnershipStatus.ACCEPTED);
+
+        // 5. 관련된 다른 모든 PENDING 요청 정리
+        log.info("파트너십 ID {} 수락됨. 관련 PENDING 요청 정리를 시작합니다.", partnership.getId());
+
+        // 요청자와 수신자가 연관된 모든 PENDING 요청을 조회
+        List<Partnership> requesterPendingRequests = partnershipRepository.findAllPendingRequestsInvolvingMember(requester);
+        List<Partnership> addresseePendingRequests = partnershipRepository.findAllPendingRequestsInvolvingMember(addressee);
+
+        //두 리스트를 합치고, 방금 수락된 요청(자기 자신)은 제외
+        Set<Partnership> requestsToReject = new HashSet<>();
+        requestsToReject.addAll(requesterPendingRequests);
+        requestsToReject.addAll(addresseePendingRequests);
+        requestsToReject.remove(partnership); // 방금 수락된 요청은 처리 대상에서 제외
+
+        //나머지 모든 PENDING 요청들의 상태를 REJECTED로 변경
+        requestsToReject.forEach(request -> request.setStatus(PartnershipStatus.REJECTED));
+
+        log.info("{}개의 관련 파트너십 요청이 자동으로 거절 처리되었습니다.", requestsToReject.size());
+
+
     }
 
     @Transactional

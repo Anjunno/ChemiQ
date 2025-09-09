@@ -12,6 +12,13 @@ import java.util.Optional;
 
 @Repository
 public interface PartnershipRepository extends JpaRepository<Partnership, Long> {
+
+    // 특정 사용자가 포함된 모든 PENDING 상태의 요청을 찾는 쿼리
+    @Query("SELECT p FROM Partnership p WHERE p.status = 'PENDING' AND " +
+            "(p.requester = :member OR p.addressee = :member)")
+    List<Partnership> findAllPendingRequestsInvolvingMember(@Param("member") Member member);
+
+
     // 특정 회원이 requester 또는 addressee로 참여하고, 상태가 ACCEPTED인 파트너십이 있는지 확인
     boolean existsByStatusAndRequester_MemberNoOrStatusAndAddressee_MemberNo(
             PartnershipStatus status1, Long requesterNo,
