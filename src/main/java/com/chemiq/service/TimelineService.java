@@ -8,10 +8,12 @@ import com.chemiq.entity.Submission;
 import com.chemiq.repository.DailyMissionRepository;
 import com.chemiq.repository.PartnershipRepository;
 import com.chemiq.repository.SubmissionRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -80,5 +82,43 @@ public class TimelineService {
                     .partnerSubmission(partnerSubmissionDto)
                     .build();
         });
+    }
+
+    @Transactional(readOnly = true)
+    public DailyMissionResponse getTodayMissionStatus(Long memberNo) {
+
+        // 1. 파트너 존재여부 확인
+        Partnership partnership = partnershipRepository.findAcceptedPartnershipByMemberNo(memberNo)
+                .orElseThrow(() -> new EntityNotFoundException("파트너가 존재하지 않습니다."));
+
+        // 2. 해당 파트너십의 오늘의 미션 조회
+        LocalDate today = LocalDate.now();
+        DailyMission dailyMission = dailyMissionRepository.findByPartnershipAndMissionDateWithMission(partnership, today)
+                .orElseThrow(() -> new EntityNotFoundException("오늘 할당된 미션이 없습니다."));
+
+        // 3. 해당 미션에 대한 제출물들 조회
+        List<Submission> todaySubmissions = submissionRepository.findAllByDailyMissionWithSubmitter(dailyMission);
+
+        SubmissionDetailDto mySubmissionDto = null;
+        SubmissionDetailDto partnerSubmissionDto = null;
+
+        // 4. 제출물을 '나'와 '파트너'로 구분하여 DTO 생성
+        for (Submission s : todaySubmissions) {
+            String presignedUrl = s3Service.getDownloadPresignedUrl(s.getImageUrl());
+            if (s.getSubmitter().getMemberNo().equals(memberNo)) {
+                mySubmissionDto = new SubmissionDetailDto(s, presignedUrl);
+            } else {
+                partnerSubmissionDto = new SubmissionDetailDto(s, presignedUrl);
+            }
+        }
+
+        // 5. 최종 응답 DTO 생성 후 반환
+        return DailyMissionResponse.builder()
+                .dailyMissionId(dailyMission.getId())
+                .missionTitle(dailyMission.getMission().getTitle())
+                .missionDate(dailyMission.getMissionDate())
+                .mySubmission(mySubmissionDto)
+                .partnerSubmission(partnerSubmissionDto)
+                .build();
     }
 }

@@ -50,4 +50,22 @@ public class TimelineController {
         return ResponseEntity.ok(timelinePage);
     }
 
+
+    @Operation(
+            summary = "오늘의 미션 현황 조회",
+            description = "로그인된 사용자의 오늘 미션 내용과, 나와 파트너의 제출 현황을 함께 조회합니다.",
+            security = @SecurityRequirement(name = "JWT"),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "조회 성공",
+                            content = @Content(schema = @Schema(implementation = DailyMissionResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "파트너 관계가 아니거나 오늘 할당된 미션이 없음",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            }
+    )
+    @GetMapping("/timeline/today")
+    public ResponseEntity<?> getTodayTimeline(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        var todayTimeline = timelineService.getTodayMissionStatus(customUserDetails.getMemberNo());
+        return ResponseEntity.ok(todayTimeline);
+    }
+
 }

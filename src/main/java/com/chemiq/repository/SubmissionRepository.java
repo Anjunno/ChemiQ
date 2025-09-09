@@ -19,10 +19,15 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
     @Query("SELECT s FROM Submission s JOIN s.dailyMission dm WHERE dm.partnership = :partnership")
     Page<Submission> findByPartnership(@Param("partnership") Partnership partnership, Pageable pageable);
 
+    // JOIN FETCH를 추가하여 연관된 submitter(Member)를 함께 조회
+    @Query("SELECT s FROM Submission s JOIN FETCH s.submitter WHERE s.dailyMission = :dailyMission")
+    List<Submission> findAllByDailyMissionWithSubmitter(@Param("dailyMission") DailyMission dailyMission);
+
     // 여러 DailyMission에 속한 모든 Submission들을 한 번에 조회 (N+1 문제 방지용)
     List<Submission> findAllByDailyMissionIn(List<DailyMission> dailyMissions);
 
     List<Submission> findAllByDailyMission(DailyMission dailyMission);
+
 
 
 }
