@@ -55,7 +55,7 @@ public class PartnershipController {
     @PostMapping("/partnerships/requests")
     public ResponseEntity<?> createPartnershipRequest(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                     @RequestBody PartnershipRequest partnershipRequest) {
-        try{
+
             Long requesterNo = customUserDetails.getMemberNo();
             String addresseeId = partnershipRequest.getPartnerId();
             Partnership newPartnershipRequest = partnershipService.createRequest(requesterNo, addresseeId);
@@ -64,21 +64,12 @@ public class PartnershipController {
             URI location = URI.create("/partnership/request/" + newPartnershipRequest.getId());
             return ResponseEntity.created(location).body("파트너 신청이 완료되었습니다.");
 
-        } catch (MemberNotFoundException e) {
             // 실패 1: 상대방 사용자를 찾을 수 없음 (404 Not Found)
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND.value(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
 
-        } catch (IllegalStateException e) {
             // 실패 2: 이미 파트너가 있거나 요청이 존재함 (409 Conflict)
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.CONFLICT.value(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
 
-        } catch (IllegalArgumentException e) {
             // 실패 3: 자기 자신에게 요청하는 등 잘못된 인자로 요청 (400 Bad Request)
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }
+
     }
 
 
@@ -95,17 +86,14 @@ public class PartnershipController {
     @DeleteMapping("/partnerships")
     // 파트너 관계 해제
     public ResponseEntity<?> deletePartnership(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        try {
+
             Long memberNo = customUserDetails.getMemberNo();
             partnershipService.cancelPartnership(memberNo);
 
             return ResponseEntity.ok().body("파트너 관계가 해제되었습니다.");
 
-        } catch (IllegalStateException e) {
             // 서비스에서 "파트너가 없다"는 예외를 던진 경우 (409 Conflict)
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.CONFLICT.value(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
-        }
+
 
     }
 
@@ -129,27 +117,19 @@ public class PartnershipController {
     // 파트너 관계 수락
     public ResponseEntity<?> acceptPartnershipRequest(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                                       @PathVariable Long partnershipId) {
-        try{
+
             // 수락하는 주체(파트너 요청 받은 사람)
             Long addresseeNo = customUserDetails.getMemberNo();
             partnershipService.acceptPartnership(partnershipId, addresseeNo);
 
             return ResponseEntity.ok("파트너 요청을 수락했습니다.");
-        } catch (EntityNotFoundException e) {
+
             // 실패 1: 해당 요청을 찾을 수 없음 (404 NOT_FOUND)
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND.value(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
 
-        } catch (AccessDeniedException e) {
             // 실패 2: 요청을 수락할 권한이 없음 (403 FORBIDDEN)
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.FORBIDDEN.value(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
 
-        } catch (IllegalStateException e) {
             // 실패 3: 이미 처리된 요청이거나, 누군가 이미 파트너가 있음 (409 Conflict)
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.CONFLICT.value(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
-        }
+
 
     }
 
@@ -174,26 +154,19 @@ public class PartnershipController {
     public ResponseEntity<?> rejectPartnershipRequest(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                                       @PathVariable Long partnershipId) {
 
-        try{ // 수락하는 주체(파트너 요청 받은 사람)
+             // 수락하는 주체(파트너 요청 받은 사람)
             Long addresseeNo = customUserDetails.getMemberNo();
             partnershipService.rejectPartnership(partnershipId, addresseeNo);
 
             return ResponseEntity.ok("파트너 요청을 거절했습니다.");
-        } catch (EntityNotFoundException e) {
+
+
             // 실패 1: 해당 요청을 찾을 수 없음 (404 NOT_FOUND)
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND.value(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
 
-        } catch (AccessDeniedException e) {
             // 실패 2: 요청을 거절할 권한이 없음 (403 FORBIDDEN)
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.FORBIDDEN.value(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
 
-        } catch (IllegalStateException e) {
             // 실패 3: 이미 처리된 요청이거나, 유효한 요청이 아님 (409 Conflict)
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.CONFLICT.value(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
-        }
+
     }
 
     @Operation(
@@ -254,16 +227,13 @@ public class PartnershipController {
     // 자신의 파트너 정보 조회
     public ResponseEntity<?> getPartnership(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
-        try {
 
             PartnershipPartnerResponse partnerInfo = partnershipService.findPartnerInfo(customUserDetails.getMemberNo());
             return ResponseEntity.ok(partnerInfo);
 
-        } catch (EntityNotFoundException e) {
+
             // 실패 1: 해당 요청을 찾을 수 없음 (404 NOT_FOUND)
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND.value(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
-        }
+
     }
 
 
@@ -287,24 +257,17 @@ public class PartnershipController {
     // 보낸 요청 취소
     public ResponseEntity<?> cancelPartnershipRequest(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                              @PathVariable Long partnershipId) {
-        try {
+
             partnershipService.cancelRequest(partnershipId, customUserDetails.getMemberNo());
             return ResponseEntity.ok("파트너 요청이 취소되었습니다.");
 
-        } catch (EntityNotFoundException e) {
-            // 1. 요청 ID가 잘못된 경우
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND.value(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
 
-        } catch (AccessDeniedException e) {
-            // 2. 내 요청이 아닌 경우
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.FORBIDDEN.value(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
 
-        } catch (IllegalStateException e) {
-            // 3. 이미 처리된 요청인 경우
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.CONFLICT.value(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
-        }
+            // 1. 요청 ID가 잘못된 경우 404
+
+            // 2. 내 요청이 아닌 경우 403
+
+            // 3. 이미 처리된 요청인 경우 409
+
     }
 }

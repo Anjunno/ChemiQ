@@ -64,12 +64,12 @@ public class ReissueController {
                     .body(responseBody);
 
         } catch(IllegalArgumentException e) {
-            // 요청 body에 refresh token이 없거나 토큰 유형이 refresh가 아님
+            // 요청 body에 refresh token이 없거나 토큰 유형이 refresh가 아님 404
             ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
 
         } catch(ExpiredJwtException e) {
-            // 토큰 만료됨
+            // 토큰 만료됨 401
             ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), "Refresh token이 만료되었습니다.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
         }

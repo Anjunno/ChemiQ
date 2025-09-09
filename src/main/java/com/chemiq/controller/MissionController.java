@@ -44,15 +44,12 @@ public class MissionController {
     @GetMapping("/missions/today")
     public ResponseEntity<?> getTodayMission(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
-        try {
             TodayMissionResponse todayMission = missionService.getTodayMission(customUserDetails.getMemberNo());
+            // 200
             return ResponseEntity.ok(todayMission);
 
-        } catch(EntityNotFoundException e) {
-            // 해당 요청을 찾을 수 없음 404
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND.value(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
-        }
+
+            // 예외 : 해당 요청을 찾을 수 없음 404
 
     }
 }

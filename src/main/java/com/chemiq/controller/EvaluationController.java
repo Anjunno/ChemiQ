@@ -59,38 +59,23 @@ public class EvaluationController {
             @PathVariable Long submissionId,
             @Valid @RequestBody EvaluationRequest requestDto) {
 
-        try {
             Evaluation newEvaluation = evaluationService.createEvaluation(
                     customUserDetails.getMemberNo(),
                     submissionId,
-                    requestDto
-            );
+                    requestDto);
             // 201 Created 응답 및 생성된 리소스의 ID 반환
             return ResponseEntity.status(HttpStatus.CREATED).body(newEvaluation.getId());
 
-        } catch (EntityNotFoundException e) {
-            // Service 로직에서 ID로 Submission을 찾지 못했을 때 발생하는 예외.
+            // Service 로직에서 ID로 Submission을 찾지 못했을 때 발생하는 예외. 404
             // (예: 클라이언트가 존재하지 않는 submissionId로 요청)
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND.value(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
 
-        } catch (AccessDeniedException e) {
-            // Service 로직에서 권한 문제를 확인했을 때 발생하는 예외.
+            // Service 로직에서 권한 문제를 확인했을 때 발생하는 예외. 403
             // (예: 자신의 제출물을 평가하려고 시도, 파트너가 아닌 사람이 평가 시도)
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.FORBIDDEN.value(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
 
-        } catch (IllegalStateException e) {
-            // Service 로직에서 잘못된 '상태'의 요청을 확인했을 때 발생하는 예외.
+            // Service 로직에서 잘못된 '상태'의 요청을 확인했을 때 발생하는 예외. 409
             // (예: 이미 평가가 완료된 제출물에 다시 평가를 시도)
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.CONFLICT.value(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
 
-        } catch (IllegalArgumentException e) {
-            // Service 로직에서 잘못된 '입력 값'을 확인했을 때 발생하는 예외.
+            // Service 로직에서 잘못된 '입력 값'을 확인했을 때 발생하는 예외. 404
             // (예: 점수가 0~5점 범위를 벗어나거나, 0.5 단위가 아닐 경우)
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }
     }
 }

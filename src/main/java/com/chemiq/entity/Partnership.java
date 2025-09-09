@@ -41,32 +41,36 @@ public class Partnership {
     //== 비즈니스 로직을 위한 메소드들 ==//
 
     /**
-     * 스트릭 카운트를 1 증가시킵니다.
+     * 스트릭 카운트를 1 증가.
      */
     public void increaseStreak() {
         this.streakCount++;
     }
 
     /**
-     * 스트릭 카운트를 0으로 초기화합니다.
+     * 스트릭 카운트를 0으로 초기화.
      */
     public void resetStreak() {
         this.streakCount = 0;
     }
 
     public void applyScorePenalty(double penaltyAmount) {
-        // 새로운 점수를 계산합니다.
+        // 새로운 점수를 계산.
         double newScore = this.chemiScore - penaltyAmount;
 
-        // 새로운 점수가 0보다 작은지 확인하고, 작다면 0으로 고정합니다.
+        // 새로운 점수가 0보다 작은지 확인하고, 작다면 0으로 고정.
         this.chemiScore = Math.max(0.0, newScore);
     }
     /**
-     * 새로운 평균 점수를 기반으로 케미 지수를 업데이트합니다.
-     * (로직은 나중에 더 정교하게 만들 수 있습니다.)
+     * 새로운 평균 점수를 기반으로 케미 지수를 업데이트.
      */
     public void updateChemiScore(double newAverageScore) {
-        // (기존 점수 + 새로운 점수) / 2
-        this.chemiScore = (this.chemiScore + newAverageScore) / 2.0;
+        // 케미 지수가 초기값(0.0)인 경우, 첫 점수를 그대로 반영.
+        if (this.chemiScore == 0.0) {
+            this.chemiScore = newAverageScore;
+        } else {
+            // 그 이후부터는 기존 점수와 새 점수의 평균으로 업데이트.
+            this.chemiScore = (this.chemiScore + newAverageScore) / 2.0;
+        }
     }
 }

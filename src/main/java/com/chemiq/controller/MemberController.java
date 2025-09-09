@@ -44,7 +44,6 @@ public class MemberController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> signUp(@RequestBody MemberSignUpRequest request) {
-        try {
             // 서비스는 성공 시 Member 객체를 반환
             Member newMember = memberService.createMember(request);
 
@@ -55,22 +54,10 @@ public class MemberController {
             return ResponseEntity.created(location)
                     .body(new MemberSignUpResponse("회원가입 성공"));
 
-//            return ResponseEntity.ok(new MemberSignUpResponse("회원가입 성공"));
 
-        } catch (DuplicateMemberIdException e) {
             // 3. 아이디 중복 예외 처리 (409 Conflict)
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.CONFLICT.value(), e.getMessage());
-            return ResponseEntity
-                    .status(HttpStatus.CONFLICT)
-                    .body(errorResponse);
 
-        } catch (IllegalArgumentException e) {
             // 4. 기타 유효성 검증 예외 처리 (400 Bad Request)
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage());
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(errorResponse);
-        }
     }
 
 

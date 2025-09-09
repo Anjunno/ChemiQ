@@ -1,5 +1,6 @@
 package com.chemiq.entity;
-
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -18,13 +19,17 @@ public class Member {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long memberNo;
 
-    @Column(length = 20, nullable = false, unique = true)
+    @NotBlank // null, "", " " 모두 허용하지 않음
+    @Size(min = 5, max = 12) // 애플리케이션 레벨에서 5~12자 길이 검증
+    @Column(length = 12, nullable = false, unique = true)
     private String memberId;
 
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
+    @NotBlank
+    @Size(min = 2, max = 6)
+    @Column(length = 6, nullable = false)
     private String nickname;
 
 //    @OneToOne(mappedBy = "member", fetch = FetchType.LAZY)
@@ -35,6 +40,7 @@ public class Member {
 //    private String refreshToken;
 
     @CreationTimestamp
+    @Column(updatable = false)
     private LocalDateTime created;
 
     @UpdateTimestamp

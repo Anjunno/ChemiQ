@@ -55,7 +55,7 @@ public class SubmissionController {
     public ResponseEntity<?> getUploadUrl(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @Valid @RequestBody PresignedUrlRequest requestDto) { // @Valid로 DTO 유효성 검증
-        try {
+
             //SubmissionService 호출
             PresignedUrlResponse response = submissionService.generateUploadUrl(
                     customUserDetails.getMemberNo(),
@@ -64,18 +64,10 @@ public class SubmissionController {
 
             return ResponseEntity.ok(response);
 
-        } catch (IllegalStateException e) {
-            // "파트너 없음", "미션 없음", "이미 제출함" 등의 예외 처리
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.CONFLICT.value(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
-        }
-        catch (Exception e) {
-            // S3와의 통신 중 예상치 못한 오류(예: AWS 서비스 장애, 자격 증명 문제)가 발생할 수 있습니다.
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "URL 발급 중 오류가 발생했습니다.");
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(errorResponse);
-        }
+            // "파트너 없음", "미션 없음", "이미 제출함" 등의 예외 처리 409
+
+            // S3와의 통신 중 예상치 못한 오류(예: AWS 서비스 장애, 자격 증명 문제)가 발생할 수 있습니다. 500
+
     }
 
 
@@ -109,31 +101,17 @@ public class SubmissionController {
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @Valid @RequestBody SubmissionCreateRequest requestDto) {
 
-        try {
+
             Submission newSubmission = submissionService.createSubmission(customUserDetails.getMemberNo(), requestDto);
             // 성공 시, 생성된 Submission의 ID를 반환하고 201 Created 상태 코드를 응답.
             return ResponseEntity.status(HttpStatus.CREATED).body(newSubmission.getId());
 
-        } catch (EntityNotFoundException e) {
+
             // 요청한 dailyMissionId가 존재하지 않을 때 (404 Not Found)
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND.value(), e.getMessage());
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(errorResponse);
 
-        } catch (AccessDeniedException e) {
             // 해당 미션을 제출할 권한이 없을 때 (403 Forbidden)
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.FORBIDDEN.value(), e.getMessage());
-            return ResponseEntity
-                    .status(HttpStatus.FORBIDDEN)
-                    .body(errorResponse);
 
-        } catch (IllegalStateException e) {
             // 이미 제출했거나, 오늘 미션이 아닐 때 (409 Conflict)
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.CONFLICT.value(), e.getMessage());
-            return ResponseEntity
-                    .status(HttpStatus.CONFLICT)
-                    .body(errorResponse);
-        }
+
     }
 }

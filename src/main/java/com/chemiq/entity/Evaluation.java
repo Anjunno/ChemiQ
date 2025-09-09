@@ -32,5 +32,6 @@ public class Evaluation {
     private String comment; // 파트너가 남긴 코멘트
 
     @CreationTimestamp
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 }
