@@ -4,8 +4,11 @@ import com.chemiq.DTO.PresignedUrlResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.services.s3.model.GetObjectAclRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 import java.time.Duration;
@@ -44,5 +47,27 @@ public class S3Service {
 
         //5. 클라이언트에게 업로드할 URL과 업로드 후 서버에 알려줄 파일 키를 함께 반환
         return new PresignedUrlResponse(presignedUrl, fileKey);
+    }
+
+    public String getDownloadPresignedUrl(String fileKey) {
+        // filekey 없는 경우
+        if (fileKey == null || fileKey.isBlank()) {
+            return null;
+        }
+        //1. S3에 파일을 다운로드할(GetObject) 요청을 미리 준비
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucket)
+                .key(fileKey)
+                .build();
+        //2. S3 Presigner를 사용하여 최종적으로 Pre-signed URL을 생성
+        GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofMinutes(10))
+                .getObjectRequest(getObjectRequest)
+                .build();
+
+        String presignedUrl = s3Presigner.presignGetObject(getObjectPresignRequest).url().toString();
+
+        //3. url 반환
+        return presignedUrl;
     }
 }
