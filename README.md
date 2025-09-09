@@ -344,3 +344,36 @@
   - Swagger와 Postman을 이용해 2단계로 이루어진 복잡한 API 흐름을 직접 테스트하고, EC2에 배포된 서버에서 정상적으로 S3 연동이 동작하는 것을 확인하며 큰 성취감을 느꼈습니다.
 
 </details>
+
+<details>
+<summary>🗓️ 2025-09-09 - 핵심 기능 구현 완료 (타임라인, 평가, 스트릭 시스템)</summary>
+
+**📌 개발 일지**
+- **(기능) 공유 타임라인 조회 API 구현 (`GET /timeline`)**
+  - 파트너와 함께한 모든 미션 기록을 최신순으로 조회하는 기능을 페이징(Paging)을 적용하여 구현.
+  - '하루치 미션'을 하나의 단위로 묶어, 사용자와 파트너의 제출물을 각각 포함하는 `DailyMissionResponseDto` 형태로 응답하도록 설계.
+- **(기능) 오늘의 미션 현황 조회 API 구현 (`GET /timeline/today`)**
+  - 앱 메인 화면을 위해, 오늘 할당된 미션과 제출 현황을 한번에 조회하는 기능을 구현.
+- **(기능) 평가 및 스트릭/케미 지수 시스템 구현**
+  - 파트너의 미션 제출물에 점수와 코멘트를 남기는 '평가' 기능(`POST /submissions/{id}/evaluations`)을 구현.
+  - 두 파트너가 서로 평가까지 모두 완료하면, `Partnership`의 `streakCount`가 1 증가하고 `chemiScore`가 업데이트되도록 구현.
+  - 매일 자정 스케줄러가 전날 미션 미완료 시 `streakCount`를 0으로 초기화하고 점수 패널티를 부여하는 로직을 추가.
+- **(리팩토링)**
+  - `Partnership` 수락 로직에 경쟁 상태(Race Condition) 방어 로직 및 다른 요청 자동 정리 기능을 추가하여 데이터 정합성을 강화.
+  - 모든 컨트롤러의 `try-catch` 블록을 제거하고, `@RestControllerAdvice`를 이용한 전역 예외 처리기로 코드를 중앙화하고 간결하게 개선.
+  - JPA 엔티티 모델의 제약조건을 보완하고, 비즈니스 메소드를 추가하여 객체지향적으로 개선.
+  - 타임라인 조회 시 발생할 수 있는 N+1 쿼리 문제를 `JOIN FETCH`를 사용하여 해결하고 성능을 최적화.
+
+**📝 개발 회고 및 트러블슈팅**
+- **트러블슈팅: 스트릭(Streak) 업데이트 시 NullPointerException 발생**
+  - **문제점:** 미션 완료 후 `partnership.increaseStreak()` 메소드(`streakCount++`) 호출 시 `NullPointerException`이 발생.
+  - **원인 분석:** 기존 `Partnership` 엔티티에 `Integer streakCount` 필드를 새로 추가하고 애플리케이션을 재시작하자, JPA가 `partnership` 테이블에 `streak_count` 컬럼을 추가했지만, **기존에 이미 존재하던 데이터**들의 이 새 컬럼 값은 **`NULL`**로 채워졌습니다. 이 `null` 값을 가진 `streakCount` 필드에 `++` 연산을 시도하자 `NullPointerException`이 발생했습니다.
+  - **해결:**
+    1.  **기존 데이터 수정 (DB):** `UPDATE partnership SET streak_count = 0 WHERE streak_count IS NULL;` SQL을 실행하여, 이미 `NULL`로 들어가 있는 기존 데이터들을 `0`으로 업데이트하여 문제를 즉시 해결했습니다.
+    2.  **향후 데이터 방지 (Java Entity):** `Partnership` 엔티티의 `streakCount` 필드에 **`@Builder.Default`** 어노테이션과 함께 **초기값 `0`을 명시**했습니다. 이를 통해 앞으로 새로 생성되는 모든 `Partnership` 객체는 `streakCount` 값이 `null`이 아닌 `0`으로 시작하도록 보장하여, 같은 문제가 재발하는 것을 원천적으로 방지했습니다.
+- 
+- **개발 회고:**
+  - 이번 기능들을 구현하며 '상태(State)'가 변화하고 여러 비즈니스 규칙이 얽혀있는 복잡한 워크플로우를 설계하는 경험을 했습니다.
+  - 다양한 엣지 케이스를 고려한 서비스 로직이 Swagger를 통한 테스트에서 예상대로 동작하는 것을 확인하며 뿌듯함을 느꼈습니다.
+
+</details>
