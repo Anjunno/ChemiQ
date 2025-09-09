@@ -21,4 +21,8 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
 
     // 여러 DailyMission에 속한 모든 Submission들을 한 번에 조회 (N+1 문제 방지용)
     List<Submission> findAllByDailyMissionIn(List<DailyMission> dailyMissions);
+
+    List<Submission> findAllByDailyMission(DailyMission dailyMission);
+
+
 }

@@ -24,6 +24,13 @@ public interface PartnershipRepository extends JpaRepository<Partnership, Long> 
     );
 
 
+    // 파트너 상태 확인
+    @Query("SELECT count(p) > 0 FROM Partnership p WHERE " +
+            "p.status = com.chemiq.entity.PartnershipStatus.ACCEPTED AND " + // 1. 상태를 직접 명시
+            "((p.requester = :userA AND p.addressee = :userB) OR " +       // 2. A가 요청자, B가 수신자 이거나
+            "(p.requester = :userB AND p.addressee = :userA))")            //    B가 요청자, A가 수신자인 경우
+    boolean existsAcceptedPartnershipBetween(@Param("userA") Member userA, @Param("userB") Member userB);
+
     @Query("SELECT p FROM Partnership p WHERE " +
             "(p.requester = :memberA AND p.addressee = :memberB) OR " +
             "(p.requester = :memberB AND p.addressee = :memberA)")

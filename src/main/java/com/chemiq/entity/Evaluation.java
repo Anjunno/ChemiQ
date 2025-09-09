@@ -26,7 +26,7 @@ public class Evaluation {
     private Member evaluator; // 누가 평가를 남겼는지
 
     @Column(nullable = false)
-    private double score; // 1점 ~ 5점
+    private double score; // 1.0점 ~ 5.0점
 
     @Column(length = 500)
     private String comment; // 파트너가 남긴 코멘트
