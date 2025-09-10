@@ -68,7 +68,7 @@ public class MemberController {
 //    public ResponseEntity<?> test() {
 //        return ResponseEntity.ok().body("접근 가능합니다");
 //    }
-    
+
 
     @Operation(
             summary = "마이페이지 정보 조회",
