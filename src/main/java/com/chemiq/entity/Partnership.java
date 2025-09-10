@@ -2,6 +2,10 @@ package com.chemiq.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Builder
 @Getter
@@ -37,6 +41,11 @@ public class Partnership {
     @Builder.Default
     private Double chemiScore = 0.0;
 
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    private LocalDate acceptedAt;
 
     //== 비즈니스 로직을 위한 메소드들 ==//
 

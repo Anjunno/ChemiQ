@@ -1,8 +1,6 @@
 package com.chemiq.controller;
 
-import com.chemiq.DTO.ErrorResponse;
-import com.chemiq.DTO.MemberSignUpResponse;
-import com.chemiq.DTO.MemberSignUpRequest;
+import com.chemiq.DTO.*;
 import com.chemiq.entity.Member;
 import com.chemiq.exception.DuplicateMemberIdException;
 import com.chemiq.service.MemberService;
@@ -10,10 +8,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -66,5 +66,25 @@ public class MemberController {
     @GetMapping("/test")
     public ResponseEntity<?> test() {
         return ResponseEntity.ok().body("접근 가능합니다");
+    }
+
+
+    @Operation(
+            summary = "마이페이지 정보 조회",
+            description = "로그인된 사용자의 '마이페이지' 화면에 필요한 모든 정보를 한번에 조회합니다. 파트너가 있는 경우 파트너 정보와 파트너십 정보(스트릭, 케미 지수)가 함께 반환되며, 파트너가 없는 경우 해당 필드들은 null로 반환됩니다.",
+            security = @SecurityRequirement(name = "JWT"),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "마이페이지 정보 조회 성공",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = MyPageResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "요청한 회원 정보를 찾을 수 없음",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class)))
+            }
+    )
+    @GetMapping("/members/me/info")
+    public ResponseEntity<MyPageResponse> getMyPageInfo(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        MyPageResponse myPageInfo = memberService.getMyPageInfo(customUserDetails.getMemberNo());
+        return ResponseEntity.ok(myPageInfo);
     }
 }

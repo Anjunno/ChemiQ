@@ -1,19 +1,28 @@
 package com.chemiq.service;
 
+import com.chemiq.DTO.MemberInfoDto;
 import com.chemiq.DTO.MemberSignUpRequest;
+import com.chemiq.DTO.MyPageResponse;
+import com.chemiq.DTO.PartnershipInfoDto;
 import com.chemiq.entity.Member;
+import com.chemiq.entity.Partnership;
 import com.chemiq.exception.DuplicateMemberIdException;
 import com.chemiq.repository.MemberRepository;
+import com.chemiq.repository.PartnershipRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class MemberService {
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final PartnershipRepository partnershipRepository;
 
     @Transactional
     public Member createMember(MemberSignUpRequest memberSignUpRequest) {
@@ -41,5 +50,37 @@ public class MemberService {
 
         // 3. 성공 시, 생성된 Member 객체를 반환합니다.
         return memberRepository.save(newMember);
+    }
+
+    @Transactional(readOnly = true)
+    public MyPageResponse getMyPageInfo(Long memberNo) {
+
+        // 1. 내 정보 조회
+        Member me = memberRepository.findById(memberNo)
+                .orElseThrow(() -> new EntityNotFoundException(memberNo + "에 해당하는 사용자를 찾을 수 없습니다"));
+
+        // 2. 파트너십 정보 조회
+        Optional<Partnership> partnershipOpt = partnershipRepository.findAcceptedPartnershipByMemberNo(memberNo);
+
+        // 3. 파트너가 있는 경우와 없는 경우를 분기하여 DTO 생성
+        if (partnershipOpt.isPresent()) {
+            // --- 파트너가 있는 경우
+            Partnership partnership = partnershipOpt.get();
+            Member partner = me.getMemberNo().equals(partnership.getRequester().getMemberNo())
+                    ? partnership.getAddressee()
+                    : partnership.getRequester();
+
+            return MyPageResponse.builder()
+                    .myInfo(new MemberInfoDto(me))
+                    .partnerInfo(new MemberInfoDto(partner))
+                    .partnershipInfo(new PartnershipInfoDto(partnership))
+                    .build();
+        } else {
+            // --- 파트너가 없는 경우
+            return MyPageResponse.builder()
+                    .myInfo(new MemberInfoDto(me))
+                    // partnerInfo와 partnershipInfo는 null로 남겨둠 (Builder의 기본값)
+                    .build();
+        }
     }
 }

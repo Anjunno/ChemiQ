@@ -17,6 +17,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -126,6 +127,7 @@ public class PartnershipService {
 
         // 4. 상태를 ACCEPTED로 변경
         partnership.setStatus(PartnershipStatus.ACCEPTED);
+        partnership.setAcceptedAt(LocalDate.now());
 
         // 5. 관련된 다른 모든 PENDING 요청 정리
         log.info("파트너십 ID {} 수락됨. 관련 PENDING 요청 정리를 시작합니다.", partnership.getId());
