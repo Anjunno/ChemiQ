@@ -32,12 +32,10 @@ public class Member {
     @Column(length = 6, nullable = false)
     private String nickname;
 
-//    @OneToOne(mappedBy = "member", fetch = FetchType.LAZY)
-//    private Device device;
-
     private String role;
 
-//    private String refreshToken;
+    //프로필 이미지의 파일 키를 저장할 필드
+    private String profileImageKey;
 
     @CreationTimestamp
     @Column(updatable = false)
@@ -52,5 +50,10 @@ public class Member {
 
     public void changePassword(String password) {
         this.password = password;
+    }
+
+    // 프로필 이미지 키 변경을 위한 메소드
+    public void changeProfileImageKey(String profileImageKey) {
+        this.profileImageKey = profileImageKey;
     }
 }

@@ -64,11 +64,11 @@ public class MemberController {
 
 
 
-    @GetMapping("/test")
-    public ResponseEntity<?> test() {
-        return ResponseEntity.ok().body("접근 가능합니다");
-    }
-
+//    @GetMapping("/test")
+//    public ResponseEntity<?> test() {
+//        return ResponseEntity.ok().body("접근 가능합니다");
+//    }
+    
 
     @Operation(
             summary = "마이페이지 정보 조회",
@@ -120,6 +120,7 @@ public class MemberController {
     @Operation(
             summary = "내 비밀번호 변경",
             description = "현재 로그인된 사용자의 비밀번호를 변경합니다.",
+            security = @SecurityRequirement(name = "JWT"),
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     content = @Content(
@@ -144,5 +145,30 @@ public class MemberController {
     ) {
         memberService.patchPassword(customUserDetails.getMemberNo(), request);
         return ResponseEntity.ok("비밀번호 변경됨.");
+    }
+
+
+    // 1. 프로필 사진 업로드용 URL 요청 API
+    @Operation(summary = "프로필 사진 업로드용 URL 요청")
+    @SecurityRequirement(name = "JWT")
+    @PostMapping("/members/me/profile-image/presigned-url")
+    public ResponseEntity<PresignedUrlResponse> getProfileImageUploadUrl(
+            @Valid @RequestBody PresignedUrlRequest requestDto) {
+
+        PresignedUrlResponse response = memberService.generateProfileImageUploadUrl(requestDto);
+        return ResponseEntity.ok(response);
+    }
+
+    // 2. 프로필 사진 업로드 완료 보고 API
+    @Operation(summary = "프로필 사진 업로드 완료 처리")
+    @SecurityRequirement(name = "JWT")
+    @PostMapping("/members/me/profile-image")
+    public ResponseEntity<?> updateProfileImage(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @Valid @RequestBody ProfileImageUpdateRequest requestDto) {
+
+        memberService.updateProfileImage(customUserDetails.getMemberNo(), requestDto.getFileKey());
+
+        return ResponseEntity.ok("프로필 사진이 성공적으로 변경되었습니다.");
     }
 }

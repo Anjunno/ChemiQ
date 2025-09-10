@@ -21,6 +21,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final PartnershipRepository partnershipRepository;
+    private final S3Service s3Service;
 
     @Transactional
     public Member createMember(MemberSignUpRequest memberSignUpRequest) {
@@ -57,27 +58,38 @@ public class MemberService {
         Member me = memberRepository.findById(memberNo)
                 .orElseThrow(() -> new EntityNotFoundException(memberNo + "에 해당하는 사용자를 찾을 수 없습니다"));
 
+        // 내 프로필 이미지에 대한 Pre-signed URL 생성
+        String myProfileImageUrl = s3Service.getDownloadPresignedUrl(me.getProfileImageKey());
+        // 수정된 생성자를 사용하여 DTO 생성
+        MemberInfoDto myInfoDto = new MemberInfoDto(me, myProfileImageUrl);
+
         // 2. 파트너십 정보 조회
         Optional<Partnership> partnershipOpt = partnershipRepository.findAcceptedPartnershipByMemberNo(memberNo);
 
         // 3. 파트너가 있는 경우와 없는 경우를 분기하여 DTO 생성
         if (partnershipOpt.isPresent()) {
-            // --- 파트너가 있는 경우
+            // --- 파트너가 있는 경우 ---
             Partnership partnership = partnershipOpt.get();
             Member partner = me.getMemberNo().equals(partnership.getRequester().getMemberNo())
                     ? partnership.getAddressee()
                     : partnership.getRequester();
 
+            //  파트너 프로필 이미지에 대한 Pre-signed URL 생성
+            String partnerProfileImageUrl = s3Service.getDownloadPresignedUrl(partner.getProfileImageKey());
+            // 수정된 생성자를 사용하여 DTO 생성
+            MemberInfoDto partnerInfoDto = new MemberInfoDto(partner, partnerProfileImageUrl);
+
+            PartnershipInfoDto partnershipInfoDto = new PartnershipInfoDto(partnership);
+
             return MyPageResponse.builder()
-                    .myInfo(new MemberInfoDto(me))
-                    .partnerInfo(new MemberInfoDto(partner))
-                    .partnershipInfo(new PartnershipInfoDto(partnership))
+                    .myInfo(myInfoDto)
+                    .partnerInfo(partnerInfoDto)
+                    .partnershipInfo(partnershipInfoDto)
                     .build();
         } else {
-            // --- 파트너가 없는 경우
+            // --- 파트너가 없는 경우 ---
             return MyPageResponse.builder()
-                    .myInfo(new MemberInfoDto(me))
-                    // partnerInfo와 partnershipInfo는 null로 남겨둠 (Builder의 기본값)
+                    .myInfo(myInfoDto)
                     .build();
         }
     }
@@ -112,5 +124,25 @@ public class MemberService {
         // 4. 새로운 비밀번호 저장
         String encodePassword = bCryptPasswordEncoder.encode(request.getNewPassword());
         me.changePassword(encodePassword);
+    }
+
+    @Transactional(readOnly = true)
+    public PresignedUrlResponse generateProfileImageUploadUrl(PresignedUrlRequest requestDto) {
+        // "profiles" 폴더에 저장하도록 S3 서비스 호출
+        return s3Service.getUploadPresignedUrl("profiles", requestDto.getFilename());
+    }
+
+    @Transactional
+    public void updateProfileImage(Long memberNo, String fileKey) {
+        Member member = memberRepository.findById(memberNo)
+                .orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+
+        // 기존 프로필 이미지가 있었다면 S3에서 삭제
+        String oldImageKey = member.getProfileImageKey();
+        if (oldImageKey != null && !oldImageKey.isBlank()) {
+            s3Service.deleteFile(oldImageKey);
+        }
+
+        member.changeProfileImageKey(fileKey); // Dirty Checking으로 자동 업데이트
     }
 }

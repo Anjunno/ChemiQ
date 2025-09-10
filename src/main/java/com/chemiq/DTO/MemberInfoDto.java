@@ -12,10 +12,13 @@ public class MemberInfoDto {
     private final String memberId;
     private final String nickname;
     private final LocalDate created;
+    private String profileImageUrl;
 
-    public MemberInfoDto(Member member) {
+
+    public MemberInfoDto(Member member, String presignedUrl) {
         this.memberId = member.getMemberId();
         this.nickname = member.getNickname();
         this.created = LocalDate.from(member.getCreated());
+        this.profileImageUrl = presignedUrl;
     }
 }

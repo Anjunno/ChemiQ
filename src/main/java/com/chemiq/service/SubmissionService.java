@@ -47,7 +47,7 @@ public class SubmissionService {
         }
 
         // 4. 모든 검증 통과 시, S3 서비스에 URL 생성 요청
-        return s3Service.getUploadPresignedUrl(requestDto.getFilename());
+        return s3Service.getUploadPresignedUrl("submissions", requestDto.getFilename());
     }
 
     @Transactional
