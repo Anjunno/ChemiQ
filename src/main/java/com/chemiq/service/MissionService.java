@@ -103,7 +103,7 @@ public class MissionService {
                 .orElseThrow(() -> new EntityNotFoundException("오늘 할당된 미션이 없습니다."));
 
         // 3. 미션 내용 반환
-        return new TodayMissionResponse(todayMission.getMission());
+        return new TodayMissionResponse(todayMission);
     }
 
     // 미션 완료 여부를 확인하는 헬퍼(helper) 메소드
