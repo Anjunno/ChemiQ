@@ -1,9 +1,6 @@
 package com.chemiq.service;
 
-import com.chemiq.DTO.MemberInfoDto;
-import com.chemiq.DTO.MemberSignUpRequest;
-import com.chemiq.DTO.MyPageResponse;
-import com.chemiq.DTO.PartnershipInfoDto;
+import com.chemiq.DTO.*;
 import com.chemiq.entity.Member;
 import com.chemiq.entity.Partnership;
 import com.chemiq.exception.DuplicateMemberIdException;
@@ -11,6 +8,7 @@ import com.chemiq.repository.MemberRepository;
 import com.chemiq.repository.PartnershipRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -82,5 +80,37 @@ public class MemberService {
                     // partnerInfo와 partnershipInfo는 null로 남겨둠 (Builder의 기본값)
                     .build();
         }
+    }
+
+    @Transactional
+    public void patchNickname(Long memberNo, String newNickname) {
+
+        // 1. 내 정보 조회
+        Member me = memberRepository.findById(memberNo)
+                .orElseThrow(() -> new EntityNotFoundException(memberNo + "에 해당하는 사용자를 찾을 수 없습니다"));
+        // 2. 새로운 닉네임으로 변경 후 저장
+        me.changeNickname(newNickname);
+    }
+
+    @Transactional
+    public void patchPassword(Long memberNo, PasswordChangeRequest request) {
+
+        // 1. 내 정보 조회
+        Member me = memberRepository.findById(memberNo)
+                .orElseThrow(() -> new EntityNotFoundException(memberNo + "에 해당하는 사용자를 찾을 수 없습니다"));
+
+        // 2. DB에 저장된 비밀번호와 일치하는지 확인
+        if(!bCryptPasswordEncoder.matches(request.getPassword(), me.getPassword())) {
+            throw new BadCredentialsException("비밀번호가 일치하지 않습니다.");
+        }
+
+        // 3. 현재 비밀번호와 새 비밀번호가 동일한지 확인
+        if(bCryptPasswordEncoder.matches(request.getNewPassword(), me.getPassword())) {
+            throw new IllegalArgumentException("새 비밀번호는 현재 비밀번호와 달라야 합니다.");
+        }
+
+        // 4. 새로운 비밀번호 저장
+        String encodePassword = bCryptPasswordEncoder.encode(request.getNewPassword());
+        me.changePassword(encodePassword);
     }
 }

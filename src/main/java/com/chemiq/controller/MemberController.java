@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -86,5 +87,62 @@ public class MemberController {
     public ResponseEntity<MyPageResponse> getMyPageInfo(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         MyPageResponse myPageInfo = memberService.getMyPageInfo(customUserDetails.getMemberNo());
         return ResponseEntity.ok(myPageInfo);
+    }
+
+
+    @Operation(
+            summary = "내 닉네임 변경",
+            description = "현재 로그인된 사용자의 닉네임을 변경합니다. DTO에 정의된 유효성 검증 규칙을 따릅니다.",
+            security = @SecurityRequirement(name = "JWT"),
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = NicknameChangeRequest.class)
+                    )
+            ),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "닉네임 변경 성공"),
+                    @ApiResponse(responseCode = "400", description = "잘못된 요청 (유효성 검증 실패)",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class)))
+            }
+    )
+    @PatchMapping("/members/me/nickname")
+    public ResponseEntity<?> patchNickname(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @Valid @RequestBody NicknameChangeRequest request) {
+        memberService.patchNickname(customUserDetails.getMemberNo(), request.getNickname());
+        return ResponseEntity.ok("닉네임이 " + request.getNickname() + "로 변경됨.");
+    }
+
+
+    @Operation(
+            summary = "내 비밀번호 변경",
+            description = "현재 로그인된 사용자의 비밀번호를 변경합니다.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = PasswordChangeRequest.class)
+                    )
+            ),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "비밀번호 변경 성공"),
+                    @ApiResponse(responseCode = "400", description = "잘못된 요청 (유효성 검증 실패, 현재 비밀번호 불일치 등)",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "회원 정보를 찾을 수 없음",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class)))
+            }
+    )
+    @PatchMapping("/members/me/password")
+    public ResponseEntity<?> patchPassword(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @Valid @RequestBody PasswordChangeRequest request
+    ) {
+        memberService.patchPassword(customUserDetails.getMemberNo(), request);
+        return ResponseEntity.ok("비밀번호 변경됨.");
     }
 }

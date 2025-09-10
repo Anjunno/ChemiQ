@@ -45,4 +45,12 @@ public class Member {
 
     @UpdateTimestamp
     private LocalDateTime updated;
+
+    public void changeNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void changePassword(String password) {
+        this.password = password;
+    }
 }
