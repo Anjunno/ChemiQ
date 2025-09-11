@@ -1,13 +1,17 @@
 package com.chemiq.service;
+
 import com.chemiq.DTO.DailyMissionResponse;
 import com.chemiq.DTO.SubmissionDetailDto;
 import com.chemiq.DTO.TimelineResponse;
 import com.chemiq.entity.DailyMission;
+import com.chemiq.entity.Evaluation;
 import com.chemiq.entity.Partnership;
 import com.chemiq.entity.Submission;
 import com.chemiq.repository.DailyMissionRepository;
+import com.chemiq.repository.EvaluationRepository;
 import com.chemiq.repository.PartnershipRepository;
 import com.chemiq.repository.SubmissionRepository;
+import com.chemiq.service.S3Service;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -31,45 +35,56 @@ public class TimelineService {
     private final PartnershipRepository partnershipRepository;
     private final SubmissionRepository submissionRepository;
     private final DailyMissionRepository dailyMissionRepository;
+    private final EvaluationRepository evaluationRepository;
     private final S3Service s3Service; // 이미지 조회를 위한 Pre-signed URL 생성에 필요
 
 
     @Transactional(readOnly = true)
     public Page<DailyMissionResponse> getTimeline(Long memberNo, int page, int size) {
 
-        // 1. 파트너십 조회
+        // 1. 파트너십 조회 (기존과 동일)
         Partnership partnership = partnershipRepository.findAcceptedPartnershipByMemberNo(memberNo)
                 .orElse(null);
         if (partnership == null) {
-            return Page.empty(); // 파트너가 없으면 빈 페이지 반환
+            return Page.empty();
         }
 
-        // 2. 파트너십에 해당하는 'DailyMission'을 페이징하여 조회
+        // 2. 'DailyMission' 페이징 조회 (기존과 동일)
         Pageable pageable = PageRequest.of(page, size, Sort.by("missionDate").descending());
         Page<DailyMission> dailyMissionPage = dailyMissionRepository.findByPartnershipOrderByMissionDateDesc(partnership, pageable);
 
-        // 3. 조회된 DailyMission들에 속한 모든 Submission들을 DB에서 '한 번에' 가져옴 (N+1 문제 해결)
+        // 3. 'Submission' 목록 한번에 조회 (기존과 동일)
         List<Submission> submissions = submissionRepository.findAllByDailyMissionIn(dailyMissionPage.getContent());
 
-        // 4. Submission들을 DailyMission ID 기준으로 그룹핑하여 쉽게 찾을 수 있도록 Map으로 변환
+        // 4. [추가] 조회된 Submission들에 대한 'Evaluation' 목록을 한번에 조회
+        List<Evaluation> evaluations = evaluationRepository.findAllBySubmissionIn(submissions);
+
+        // 5. [수정] Submission과 Evaluation을 쉽게 찾을 수 있도록 Map으로 변환
         Map<Long, List<Submission>> submissionsMap = submissions.stream()
                 .collect(Collectors.groupingBy(s -> s.getDailyMission().getId()));
 
-        // 5. Page<DailyMission>을 Page<DailyMissionResponseDto>로 변환
+        Map<Long, Evaluation> evaluationMap = evaluations.stream()
+                .collect(Collectors.toMap(e -> e.getSubmission().getId(), e -> e));
+
+
+        // 6. Page<DailyMission>을 Page<DailyMissionResponseDto>로 변환
         return dailyMissionPage.map(dailyMission -> {
-            // 해당 DailyMission에 대한 제출물 목록을 Map에서 찾음
             List<Submission> missionSubmissions = submissionsMap.getOrDefault(dailyMission.getId(), Collections.emptyList());
 
             SubmissionDetailDto mySubmissionDto = null;
             SubmissionDetailDto partnerSubmissionDto = null;
 
-            // 제출물 목록을 순회하며 '나의 제출물'과 '파트너의 제출물'을 찾아서 DTO로 만듦
             for (Submission s : missionSubmissions) {
                 String presignedUrl = s3Service.getDownloadPresignedUrl(s.getImageUrl());
+
+                // Map에서 해당 제출물에 대한 평가 정보를 찾음. 없으면 null.
+                Evaluation evaluation = evaluationMap.get(s.getId());
+                Double score = (evaluation != null) ? evaluation.getScore() : null;
+
                 if (s.getSubmitter().getMemberNo().equals(memberNo)) {
-                    mySubmissionDto = new SubmissionDetailDto(s, presignedUrl);
+                    mySubmissionDto = new SubmissionDetailDto(s, presignedUrl, score); // score 전달
                 } else {
-                    partnerSubmissionDto = new SubmissionDetailDto(s, presignedUrl);
+                    partnerSubmissionDto = new SubmissionDetailDto(s, presignedUrl, score); // score 전달
                 }
             }
 
@@ -87,17 +102,25 @@ public class TimelineService {
     @Transactional(readOnly = true)
     public DailyMissionResponse getTodayMissionStatus(Long memberNo) {
 
-        // 1. 파트너 존재여부 확인
+        // 1. 파트너 존재여부 확인 (기존과 동일)
         Partnership partnership = partnershipRepository.findAcceptedPartnershipByMemberNo(memberNo)
                 .orElseThrow(() -> new EntityNotFoundException("파트너가 존재하지 않습니다."));
 
-        // 2. 해당 파트너십의 오늘의 미션 조회
+        // 2. 해당 파트너십의 오늘의 미션 조회 (기존과 동일)
         LocalDate today = LocalDate.now();
         DailyMission dailyMission = dailyMissionRepository.findByPartnershipAndMissionDateWithMission(partnership, today)
                 .orElseThrow(() -> new EntityNotFoundException("오늘 할당된 미션이 없습니다."));
 
-        // 3. 해당 미션에 대한 제출물들 조회
+        // 3. 해당 미션에 대한 제출물들 조회 (기존과 동일)
         List<Submission> todaySubmissions = submissionRepository.findAllByDailyMissionWithSubmitter(dailyMission);
+
+        // --- [추가] 제출물들에 대한 평가 정보 조회 ---
+        // 3-1. 조회된 제출물들에 대한 모든 평가 기록을 '한 번의 쿼리'로 가져옵니다.
+        List<Evaluation> evaluations = evaluationRepository.findAllBySubmissionIn(todaySubmissions);
+
+        // 3-2. Submission ID를 Key로, Evaluation 객체를 Value로 갖는 Map을 만들어 점수를 쉽게 찾도록 합니다.
+        Map<Long, Evaluation> evaluationMap = evaluations.stream()
+                .collect(Collectors.toMap(e -> e.getSubmission().getId(), e -> e));
 
         SubmissionDetailDto mySubmissionDto = null;
         SubmissionDetailDto partnerSubmissionDto = null;
@@ -105,10 +128,15 @@ public class TimelineService {
         // 4. 제출물을 '나'와 '파트너'로 구분하여 DTO 생성
         for (Submission s : todaySubmissions) {
             String presignedUrl = s3Service.getDownloadPresignedUrl(s.getImageUrl());
+
+            // [수정] Map에서 해당 제출물에 대한 평가 정보를 찾습니다. 없으면 null.
+            Evaluation evaluation = evaluationMap.get(s.getId());
+            Double score = (evaluation != null) ? evaluation.getScore() : null;
+
             if (s.getSubmitter().getMemberNo().equals(memberNo)) {
-                mySubmissionDto = new SubmissionDetailDto(s, presignedUrl);
+                mySubmissionDto = new SubmissionDetailDto(s, presignedUrl, score); // ◀◀ score 전달
             } else {
-                partnerSubmissionDto = new SubmissionDetailDto(s, presignedUrl);
+                partnerSubmissionDto = new SubmissionDetailDto(s, presignedUrl, score); // ◀◀ score 전달
             }
         }
 

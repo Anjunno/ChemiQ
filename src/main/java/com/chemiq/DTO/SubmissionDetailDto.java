@@ -12,12 +12,14 @@ public class SubmissionDetailDto {
     private final Long submissionId;
     private final String imageUrl;
     private final String content;
+    private final Double score;
     private final LocalDateTime createdAt;
 
-    public SubmissionDetailDto(Submission submission, String presignedImageUrl) {
+    public SubmissionDetailDto(Submission submission, String presignedImageUrl, Double score) {
         this.submissionId = submission.getId();
         this.imageUrl = presignedImageUrl;
         this.content = submission.getContent();
+        this.score = score;
         this.createdAt = submission.getCreatedAt();
     }
 }

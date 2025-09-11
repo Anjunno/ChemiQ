@@ -18,4 +18,6 @@ public interface EvaluationRepository extends JpaRepository<Evaluation, Long> {
     // 특정 DailyMission에 속한 Submission들에 대한 Evaluation의 개수를 세는 쿼리
     @Query("SELECT count(e) FROM Evaluation e WHERE e.submission.dailyMission = :dailyMission")
     long countByDailyMission(@Param("dailyMission") DailyMission dailyMission);
+
+
 }
