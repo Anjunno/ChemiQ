@@ -3,6 +3,7 @@ package com.chemiq.controller;
 import com.chemiq.DTO.CustomUserDetails;
 import com.chemiq.DTO.ErrorResponse;
 import com.chemiq.DTO.EvaluationRequest;
+import com.chemiq.DTO.EvaluationResponse;
 import com.chemiq.entity.Evaluation;
 import com.chemiq.service.EvaluationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -77,5 +78,33 @@ public class EvaluationController {
 
             // Service 로직에서 잘못된 '입력 값'을 확인했을 때 발생하는 예외. 404
             // (예: 점수가 0~5점 범위를 벗어나거나, 0.5 단위가 아닐 경우)
+    }
+
+    @Operation(
+            summary = "제출물에 대한 평가 조회",
+            description = "특정 제출물(submissionId)에 대한 파트너의 평가(점수, 코멘트)를 조회합니다. 해당 제출물의 파트너만 조회할 수 있습니다.",
+            security = @SecurityRequirement(name = "JWT"),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "평가 정보 조회 성공",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = EvaluationResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "제출물이 존재하지 않거나, 아직 평가가 등록되지 않음",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "403", description = "해당 평가를 조회할 권한이 없음 (미션 당사자가 아님)",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class)))
+            }
+    )
+    @GetMapping("/submissions/{submissionId}/evaluation")
+    public ResponseEntity<?> getEvaluation(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @PathVariable Long submissionId
+    ) {
+        EvaluationResponse evaluationResponse = evaluationService.getEvaluation(
+                submissionId,
+                customUserDetails.getMemberNo()
+        );
+        return ResponseEntity.ok(evaluationResponse);
     }
 }

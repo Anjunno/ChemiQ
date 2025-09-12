@@ -1,6 +1,7 @@
 package com.chemiq.service;
 
 import com.chemiq.DTO.EvaluationRequest;
+import com.chemiq.DTO.EvaluationResponse;
 import com.chemiq.entity.*;
 import com.chemiq.repository.EvaluationRepository;
 import com.chemiq.repository.MemberRepository;
@@ -103,5 +104,27 @@ public class EvaluationService {
                 .orElse(0.0); // 혹시 모를 경우를 대비해 기본값 설정
 
         partnership.updateChemiScore(averageScore);
+    }
+
+    @Transactional(readOnly = true)
+    public EvaluationResponse getEvaluation(Long submissionId, Long memberNo) {
+
+        // 1. submissionId로 Submission 엔티티 조회
+        Submission submission = submissionRepository.findById(submissionId)
+                .orElseThrow(() -> new EntityNotFoundException("ID " + submissionId + "에 해당하는 제출물을 찾을 수 없습니다."));
+
+        // 2. 로그인한 사용자가 해당 제출물과 관련된 파트너십의 멤버가 맞는지 확인
+        Partnership partnership = submission.getDailyMission().getPartnership();
+        if (!partnership.getRequester().getMemberNo().equals(memberNo) &&
+                !partnership.getAddressee().getMemberNo().equals(memberNo)) {
+            throw new AccessDeniedException("해당 평가를 조회할 권한이 없습니다.");
+        }
+
+        // 3. Submission에 해당하는 Evaluation 조회
+        Evaluation evaluation = evaluationRepository.findBySubmission(submission)
+                .orElseThrow(() -> new EntityNotFoundException("아직 평가가 등록되지 않았습니다."));
+
+        // 4. Entity를 DTO로 변환하여 반환
+        return new EvaluationResponse(evaluation);
     }
 }

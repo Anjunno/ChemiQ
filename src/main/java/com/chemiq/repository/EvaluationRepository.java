@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface EvaluationRepository extends JpaRepository<Evaluation, Long> {
     boolean existsBySubmission(Submission submission);
@@ -19,5 +20,5 @@ public interface EvaluationRepository extends JpaRepository<Evaluation, Long> {
     @Query("SELECT count(e) FROM Evaluation e WHERE e.submission.dailyMission = :dailyMission")
     long countByDailyMission(@Param("dailyMission") DailyMission dailyMission);
 
-
+    Optional<Evaluation> findBySubmission(Submission submission);
 }
