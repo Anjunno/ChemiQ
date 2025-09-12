@@ -39,7 +39,7 @@ public class MissionService {
 //    @Scheduled(cron = "0 * * * * ?", zone = "Asia/Seoul")
     public void assignDailyMissionToAllPartnerships() {
         log.info("데일리 미션 스케줄러 시작...");
-        LocalDate today = LocalDate.now().plusDays(2);
+        LocalDate today = LocalDate.now();
         LocalDate yesterday = today.minusDays(1);
 
         // 모든 활성 파트너십을 조회.
