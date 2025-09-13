@@ -91,8 +91,11 @@ public class EvaluationService {
         }
 
         // 4. 모든 조건이 충족되었으므로, 미션 최종 완료 처리.
-        Partnership partnership = dailyMission.getPartnership();
 
+        // 미션의 상태를 COMPLETED로 변경
+        dailyMission.setStatus(DailyMissionStatus.COMPLETED);
+
+        Partnership partnership = dailyMission.getPartnership();
         // 4-1. 스트릭(streak) 1 증가.
         partnership.increaseStreak();
 

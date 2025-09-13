@@ -1,9 +1,11 @@
 package com.chemiq.service;
 
 import com.chemiq.DTO.*;
+import com.chemiq.entity.DailyMissionStatus;
 import com.chemiq.entity.Member;
 import com.chemiq.entity.Partnership;
 import com.chemiq.exception.DuplicateMemberIdException;
+import com.chemiq.repository.DailyMissionRepository;
 import com.chemiq.repository.MemberRepository;
 import com.chemiq.repository.PartnershipRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -13,6 +15,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Optional;
 
 @Service
@@ -21,6 +26,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final PartnershipRepository partnershipRepository;
+    private final DailyMissionRepository dailyMissionRepository;
     private final S3Service s3Service;
 
     @Transactional
@@ -76,10 +82,23 @@ public class MemberService {
 
             //  파트너 프로필 이미지에 대한 Pre-signed URL 생성
             String partnerProfileImageUrl = s3Service.getDownloadPresignedUrl(partner.getProfileImageKey());
+
             // 수정된 생성자를 사용하여 DTO 생성
             MemberInfoDto partnerInfoDto = new MemberInfoDto(partner, partnerProfileImageUrl);
 
-            PartnershipInfoDto partnershipInfoDto = new PartnershipInfoDto(partnership);
+            long totalMissions = dailyMissionRepository.countByPartnershipAndStatus(
+                    partnership, DailyMissionStatus.COMPLETED);
+
+            // 2. 이번 주 완료 미션 개수 조회
+            LocalDate today = LocalDate.now();
+            LocalDate startOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+            LocalDate endOfWeek = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+
+            long weeklyMissions = dailyMissionRepository.countByPartnershipAndStatusAndMissionDateBetween(
+                    partnership, DailyMissionStatus.COMPLETED, startOfWeek, endOfWeek);
+
+            // 수정된 생성자로 PartnershipInfoDto 생성
+            PartnershipInfoDto partnershipInfoDto = new PartnershipInfoDto(partnership, totalMissions, weeklyMissions);
 
             return MyPageResponse.builder()
                     .myInfo(myInfoDto)

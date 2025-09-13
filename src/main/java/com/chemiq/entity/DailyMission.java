@@ -28,4 +28,9 @@ public class DailyMission {
     @Column(nullable = false)
     private LocalDate missionDate; // 이 미션이 할당된 날짜
 
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private DailyMissionStatus status = DailyMissionStatus.ASSIGNED;
+
 }

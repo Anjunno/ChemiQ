@@ -183,14 +183,19 @@ public class PartnershipService {
     @Transactional(readOnly = true)
     public List<PartnershipSentResponse> searchSentList(Long memberNo) {
 
-        // DB에서 Entity 리스트를 조회
-        List<Partnership> pendingList = partnershipRepository.findByRequester_MemberNo(memberNo);
+        // 1. 조회할 상태 목록을 정의.
+        List<PartnershipStatus> statusesToFind = List.of(
+                PartnershipStatus.PENDING,
+                PartnershipStatus.REJECTED
+        );
 
-        // Entity 리스트를 DTO 리스트로 변환하여 반환
-        return pendingList.stream()
+        // 2. PENDING과 REJECTED 상태의 요청만 DB에서 조회.
+        List<Partnership> sentList = partnershipRepository.findByRequester_MemberNoAndStatusIn(memberNo, statusesToFind);
+
+        // 3. Entity 리스트를 DTO 리스트로 변환.
+        return sentList.stream()
                 .map(PartnershipSentResponse::new)
                 .collect(Collectors.toList());
-
     }
 
     @Transactional(readOnly = true)

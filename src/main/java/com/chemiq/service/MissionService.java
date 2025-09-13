@@ -1,10 +1,7 @@
 package com.chemiq.service;
 
 import com.chemiq.DTO.TodayMissionResponse;
-import com.chemiq.entity.DailyMission;
-import com.chemiq.entity.Mission;
-import com.chemiq.entity.Partnership;
-import com.chemiq.entity.PartnershipStatus;
+import com.chemiq.entity.*;
 import com.chemiq.repository.DailyMissionRepository;
 import com.chemiq.repository.EvaluationRepository;
 import com.chemiq.repository.MissionRepository;
@@ -53,16 +50,33 @@ public class MissionService {
         // --- 1. 어제 미션 완료 여부 확인 및 스트릭 초기화 ---
         log.info("어제 미션 완료 여부를 확인합니다...");
         for (Partnership partnership : allActivePartnerships) {
-            dailyMissionRepository.findByPartnershipAndMissionDate(partnership, yesterday)
-                    .ifPresent(yesterdayMission -> {
-                        if (!checkMissionCompletion(yesterdayMission)) {
-                            log.info("파트너십 ID {}: 어제 미션 미완료로 스트릭을 초기화합니다.", partnership.getId());
-                            partnership.resetStreak();
 
-                            partnership.applyScorePenalty(0.2); //0.2점 차감
-                            log.info("파트너십 ID {}: 케미 지수 패널티가 적용되었습니다. 현재 점수: {}", partnership.getId(), partnership.getChemiScore());
-                        }
-                    });
+            // 각 파트너십의 '어제' DailyMission을 찾습니다.
+            Optional<DailyMission> yesterdayMissionOpt = dailyMissionRepository.findByPartnershipAndMissionDate(partnership, yesterday);
+
+            // 어제 할당된 미션이 '있는' 경우에만 검사를 진행합니다.
+            yesterdayMissionOpt.ifPresent(yesterdayMission -> {
+
+                // 어제 미션의 상태가 여전히 'ASSIGNED'(진행중)인지 확인합니다.
+                // 이렇게 하면 이미 COMPLETED 또는 FAILED로 처리된 미션은 건너뛰게 되어 더 안전합니다.
+                if (yesterdayMission.getStatus() == DailyMissionStatus.ASSIGNED) {
+
+                    // 이 시점에서 미션이 완료되지 않았음은 확실합니다.
+                    // (만약 완료되었다면 EvaluationService에서 이미 COMPLETED로 상태를 바꿨을 것이므로)
+
+                    log.info("파트너십 ID {}: 어제 미션 미완료. 스트릭 초기화 및 상태 변경.", partnership.getId());
+
+                    // 1. 스트릭을 0으로 리셋합니다.
+                    partnership.resetStreak();
+
+                    // 2. 케미 지수 패널티를 적용합니다.
+                    partnership.applyScorePenalty(0.2); // 예시: 0.2점 차감
+                    log.info("파트너십 ID {}: 케미 지수 패널티 적용됨. 현재 점수: {}", partnership.getId(), partnership.getChemiScore());
+
+                    // 3. DailyMission의 상태를 FAILED로 변경합니다.
+                    yesterdayMission.setStatus(DailyMissionStatus.FAILED);
+                }
+            });
         }
 
         // --- 2. 오늘의 미션 할당 ---

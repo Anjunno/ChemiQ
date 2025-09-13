@@ -1,6 +1,7 @@
 package com.chemiq.repository;
 
 import com.chemiq.entity.DailyMission;
+import com.chemiq.entity.DailyMissionStatus;
 import com.chemiq.entity.Partnership;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,5 +25,16 @@ public interface DailyMissionRepository extends JpaRepository<DailyMission, Long
     Optional<DailyMission> findByPartnershipAndMissionDateWithMission(
             @Param("partnership") Partnership partnership,
             @Param("date") LocalDate date
+    );
+
+    // [추가] 특정 파트너십의 '완료된' 미션 총 개수를 세는 메소드
+    long countByPartnershipAndStatus(Partnership partnership, DailyMissionStatus status);
+
+    // [추가] 특정 파트너십의, 특정 기간 동안의 '완료된' 미션 개수를 세는 메소드
+    long countByPartnershipAndStatusAndMissionDateBetween(
+            Partnership partnership,
+            DailyMissionStatus status,
+            LocalDate startDate,
+            LocalDate endDate
     );
 }

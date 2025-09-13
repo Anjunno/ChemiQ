@@ -81,6 +81,9 @@ public interface PartnershipRepository extends JpaRepository<Partnership, Long> 
 //    // requester의 memberNo가 일치하고, status가 일치하는 Partnership을 모두 조회하는 메서드
 //    List<Partnership> findByRequester_MemberNoAndStatus(Long memberNo, PartnershipStatus status);
 
+    // [추가] Requester의 memberNo가 일치하고, status가 주어진 status 목록(List)에 포함된 모든 파트너십을 조회
+    List<Partnership> findByRequester_MemberNoAndStatusIn(Long memberNo, List<PartnershipStatus> statuses);
+
     // requester의 memberNo가 일치한 Partnership을 모두 조회하는 메서드
     List<Partnership> findByRequester_MemberNo(Long memberNo);
 }
