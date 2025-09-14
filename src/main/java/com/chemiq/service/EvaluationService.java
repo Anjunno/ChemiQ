@@ -23,6 +23,7 @@ public class EvaluationService {
     private final PartnershipRepository partnershipRepository;
     private final SubmissionRepository submissionRepository;
     private final MemberRepository memberRepository;
+    private final S3Service s3Service;
 
     @Transactional
     public Evaluation createEvaluation(Long memberNo, Long submissionId, EvaluationRequest requestDto) {
@@ -124,10 +125,13 @@ public class EvaluationService {
         }
 
         // 3. Submission에 해당하는 Evaluation 조회
-        Evaluation evaluation = evaluationRepository.findBySubmission(submission)
+        Evaluation evaluation = evaluationRepository.findBySubmissionWithEvaluator(submission)
                 .orElseThrow(() -> new EntityNotFoundException("아직 평가가 등록되지 않았습니다."));
 
+        Member member = evaluation.getEvaluator();
+        String url = s3Service.getDownloadPresignedUrl(member.getProfileImageKey());
+
         // 4. Entity를 DTO로 변환하여 반환
-        return new EvaluationResponse(evaluation);
+        return new EvaluationResponse(evaluation, url);
     }
 }

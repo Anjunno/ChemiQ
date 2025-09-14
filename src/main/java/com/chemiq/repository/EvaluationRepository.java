@@ -20,5 +20,8 @@ public interface EvaluationRepository extends JpaRepository<Evaluation, Long> {
     @Query("SELECT count(e) FROM Evaluation e WHERE e.submission.dailyMission = :dailyMission")
     long countByDailyMission(@Param("dailyMission") DailyMission dailyMission);
 
+    @Query("SELECT e FROM Evaluation e JOIN FETCH e.evaluator WHERE e.submission = :submission")
+    Optional<Evaluation> findBySubmissionWithEvaluator(@Param("submission") Submission submission);
+
     Optional<Evaluation> findBySubmission(Submission submission);
 }

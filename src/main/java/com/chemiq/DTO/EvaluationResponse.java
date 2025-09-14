@@ -12,11 +12,13 @@ public class EvaluationResponse {
     private final String comment;
     private final String evaluatorNickname; // 누가 평가했는지
     private final LocalDateTime createdAt;
+    private final String evaluatorProfileImageUrl;
 
-    public EvaluationResponse(Evaluation evaluation) {
+    public EvaluationResponse(Evaluation evaluation, String evaluatorProfileImageUrl) {
         this.score = evaluation.getScore();
         this.comment = evaluation.getComment();
         this.evaluatorNickname = evaluation.getEvaluator().getNickname();
         this.createdAt = evaluation.getCreatedAt();
+        this.evaluatorProfileImageUrl = evaluatorProfileImageUrl;
     }
 }

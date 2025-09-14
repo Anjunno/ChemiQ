@@ -65,7 +65,7 @@ public class S3Service {
                 .build();
         //2. S3 Presigner를 사용하여 최종적으로 Pre-signed URL을 생성
         GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(10))
+                .signatureDuration(Duration.ofMinutes(60))
                 .getObjectRequest(getObjectRequest)
                 .build();
 
