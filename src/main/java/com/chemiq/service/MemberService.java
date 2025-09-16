@@ -3,9 +3,11 @@ package com.chemiq.service;
 import com.chemiq.DTO.*;
 import com.chemiq.entity.DailyMissionStatus;
 import com.chemiq.entity.Member;
+import com.chemiq.entity.MemberAchievement;
 import com.chemiq.entity.Partnership;
 import com.chemiq.exception.DuplicateMemberIdException;
 import com.chemiq.repository.DailyMissionRepository;
+import com.chemiq.repository.MemberAchievementRepository;
 import com.chemiq.repository.MemberRepository;
 import com.chemiq.repository.PartnershipRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -18,7 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +31,7 @@ public class MemberService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final PartnershipRepository partnershipRepository;
     private final DailyMissionRepository dailyMissionRepository;
+    private final MemberAchievementRepository memberAchievementRepository;
     private final S3Service s3Service;
 
     @Transactional
@@ -69,6 +74,12 @@ public class MemberService {
         // 수정된 생성자를 사용하여 DTO 생성
         MemberInfoDto myInfoDto = new MemberInfoDto(me, myProfileImageUrl);
 
+        // 내 도전과제 목록 조회 및 DTO 변환
+        List<MemberAchievement> achievements = memberAchievementRepository.findAllByMemberWithAchievement(me);
+        List<AchievementDto> achievementDtos = achievements.stream()
+                .map(AchievementDto::new)
+                .collect(Collectors.toList());
+
         // 2. 파트너십 정보 조회
         Optional<Partnership> partnershipOpt = partnershipRepository.findAcceptedPartnershipByMemberNo(memberNo);
 
@@ -104,11 +115,13 @@ public class MemberService {
                     .myInfo(myInfoDto)
                     .partnerInfo(partnerInfoDto)
                     .partnershipInfo(partnershipInfoDto)
+                    .myAchievements(achievementDtos)
                     .build();
         } else {
             // --- 파트너가 없는 경우 ---
             return MyPageResponse.builder()
                     .myInfo(myInfoDto)
+                    .myAchievements(achievementDtos)
                     .build();
         }
     }
