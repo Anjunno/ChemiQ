@@ -28,6 +28,8 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
 
     List<Submission> findAllByDailyMission(DailyMission dailyMission);
 
+    // 특정 사용자가 제출한 Submission의 총 개수를 세는 메소드
+    long countBySubmitter(Member submitter);
 
 
 }

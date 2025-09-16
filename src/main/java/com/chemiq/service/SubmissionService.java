@@ -3,20 +3,17 @@ package com.chemiq.service;
 import com.chemiq.DTO.PresignedUrlRequest;
 import com.chemiq.DTO.PresignedUrlResponse;
 import com.chemiq.DTO.SubmissionCreateRequest;
-import com.chemiq.entity.DailyMission;
-import com.chemiq.entity.Member;
-import com.chemiq.entity.Partnership;
-import com.chemiq.entity.Submission;
-import com.chemiq.repository.DailyMissionRepository;
-import com.chemiq.repository.MemberRepository;
-import com.chemiq.repository.PartnershipRepository;
-import com.chemiq.repository.SubmissionRepository;
+import com.chemiq.entity.*;
+import com.chemiq.event.SubmissionCreatedEvent;
+import com.chemiq.repository.*;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.time.LocalDate;
 
 @Service
@@ -27,6 +24,8 @@ public class SubmissionService {
     private final MemberRepository memberRepository;
     private final DailyMissionRepository dailyMissionRepository;
     private final PartnershipRepository partnershipRepository;
+    private final ApplicationEventPublisher eventPublisher;
+    private static final Logger log = LoggerFactory.getLogger(SubmissionService.class);
 
 
     @Transactional(readOnly = true)
@@ -88,7 +87,14 @@ public class SubmissionService {
                 .imageUrl(requestDto.getFileKey()) // URL 대신 파일 키(key)를 저장
                 .build();
 
-        return submissionRepository.save(submission);
+        Submission newSubmission =  submissionRepository.save(submission);
+
+        // --- [첫 발걸음] 도전과제 달성 여부 확인(이벤트 발생) ---
+        eventPublisher.publishEvent(new SubmissionCreatedEvent(newSubmission));
+
+        return newSubmission;
     }
 
 }
+
+
