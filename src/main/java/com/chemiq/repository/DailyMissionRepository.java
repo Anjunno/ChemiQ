@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 public interface DailyMissionRepository extends JpaRepository<DailyMission, Long> {
@@ -27,14 +28,22 @@ public interface DailyMissionRepository extends JpaRepository<DailyMission, Long
             @Param("date") LocalDate date
     );
 
-    // [추가] 특정 파트너십의 '완료된' 미션 총 개수를 세는 메소드
+    // 특정 파트너십의 '완료된' 미션 총 개수를 세는 메소드
     long countByPartnershipAndStatus(Partnership partnership, DailyMissionStatus status);
 
-    // [추가] 특정 파트너십의, 특정 기간 동안의 '완료된' 미션 개수를 세는 메소드
+    // 특정 파트너십의, 특정 기간 동안의 '완료된' 미션 개수를 세는 메소드
     long countByPartnershipAndStatusAndMissionDateBetween(
             Partnership partnership,
             DailyMissionStatus status,
             LocalDate startDate,
             LocalDate endDate
+    );
+
+    // 특정 파트너십의, 시작일과 종료일 사이의 모든 DailyMission을 Mission 정보와 함께 조회 (N+1 방지)
+    @Query("SELECT dm FROM DailyMission dm JOIN FETCH dm.mission WHERE dm.partnership = :partnership AND dm.missionDate BETWEEN :startDate AND :endDate")
+    List<DailyMission> findAllByPartnershipAndDateRangeWithMission(
+            @Param("partnership") Partnership partnership,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
     );
 }

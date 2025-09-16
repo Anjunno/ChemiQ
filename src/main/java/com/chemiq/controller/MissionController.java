@@ -3,6 +3,7 @@ package com.chemiq.controller;
 import com.chemiq.DTO.CustomUserDetails;
 import com.chemiq.DTO.ErrorResponse;
 import com.chemiq.DTO.TodayMissionResponse;
+import com.chemiq.DTO.WeeklyMissionStatusResponse;
 import com.chemiq.service.MissionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -51,5 +52,27 @@ public class MissionController {
 
             // 예외 : 해당 요청을 찾을 수 없음 404
 
+    }
+
+    @Operation(
+            summary = "주간 미션 현황 조회",
+            description = "현재 로그인된 사용자를 기준으로, 이번 주(월요일~일요일)의 각 요일별 미션 상태(완료, 실패, 진행중 등)를 조회합니다.",
+            security = @SecurityRequirement(name = "JWT"),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "주간 미션 현황 조회 성공",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = WeeklyMissionStatusResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "파트너 관계가 존재하지 않음",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class)))
+            }
+    )
+    @GetMapping("/missions/weekly-status")
+    public ResponseEntity<WeeklyMissionStatusResponse> getWeeklyMissionStatus(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+        WeeklyMissionStatusResponse weeklyStatus = missionService.getWeeklyMissionStatus(customUserDetails.getMemberNo());
+
+        return ResponseEntity.ok(weeklyStatus);
     }
 }

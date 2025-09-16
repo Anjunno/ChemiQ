@@ -1,6 +1,8 @@
 package com.chemiq.service;
 
+import com.chemiq.DTO.MissionStatusDto;
 import com.chemiq.DTO.TodayMissionResponse;
+import com.chemiq.DTO.WeeklyMissionStatusResponse;
 import com.chemiq.entity.*;
 import com.chemiq.repository.DailyMissionRepository;
 import com.chemiq.repository.EvaluationRepository;
@@ -14,11 +16,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.time.temporal.TemporalAdjusters;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -119,6 +121,55 @@ public class MissionService {
         // 3. 미션 내용 반환
         return new TodayMissionResponse(todayMission);
     }
+
+    @Transactional(readOnly = true)
+    public WeeklyMissionStatusResponse getWeeklyMissionStatus(Long memberNo) {
+
+        // 1. 파트너십 조회
+        Partnership partnership = partnershipRepository.findAcceptedPartnershipByMemberNo(memberNo)
+                .orElseThrow(() -> new EntityNotFoundException("파트너가 존재하지 않습니다."));
+
+        // 2. 이번 주의 시작일(월요일)과 종료일(일요일) 계산
+        LocalDate today = LocalDate.now();
+        LocalDate startOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate endOfWeek = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+
+        // 3. DB에서 이번 주에 해당하는 DailyMission 목록을 한 번에 조회
+        List<DailyMission> weekMissions = dailyMissionRepository
+                .findAllByPartnershipAndDateRangeWithMission(partnership, startOfWeek, endOfWeek);
+
+        // 4. 조회를 쉽게 하기 위해 날짜를 Key로 갖는 Map으로 변환
+        Map<LocalDate, DailyMission> missionsByDate = weekMissions.stream()
+                .collect(Collectors.toMap(DailyMission::getMissionDate, dm -> dm));
+
+        // 5. 최종 결과를 담을 EnumMap 생성 (요일 순서 보장)
+        Map<DayOfWeek, MissionStatusDto> weeklyStatusMap = new EnumMap<>(DayOfWeek.class);
+
+        // 6. 월요일부터 일요일까지 순회하며 결과 Map을 채움
+        for (LocalDate date = startOfWeek; !date.isAfter(endOfWeek); date = date.plusDays(1)) {
+            DailyMission dailyMission = missionsByDate.get(date);
+            MissionStatusDto statusDto;
+
+            if (dailyMission != null) {
+                // 해당 날짜에 할당된 미션이 있는 경우
+                statusDto = MissionStatusDto.builder()
+                        .dailyMissionId(dailyMission.getId())
+                        .missionTitle(dailyMission.getMission().getTitle())
+                        .status(dailyMission.getStatus())
+                        .build();
+            } else {
+                // 해당 날짜에 할당된 미션이 없는 경우
+                statusDto = MissionStatusDto.builder()
+                        .status(DailyMissionStatus.NOT_ASSIGNED)
+                        .build();
+            }
+            weeklyStatusMap.put(date.getDayOfWeek(), statusDto);
+        }
+
+        return new WeeklyMissionStatusResponse(weeklyStatusMap);
+    }
+
+
 
     // 미션 완료 여부를 확인하는 헬퍼(helper) 메소드
     private boolean checkMissionCompletion(DailyMission dailyMission) {
