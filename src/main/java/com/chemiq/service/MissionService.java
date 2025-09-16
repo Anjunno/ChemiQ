@@ -106,6 +106,7 @@ public class MissionService {
     }
 
     // 오늘의 미션 요청 메서드
+    @Transactional
     public TodayMissionResponse getTodayMission(Long memberNo) {
 
         // 1. 파트너 존재여부 확인
@@ -115,11 +116,31 @@ public class MissionService {
 
         // 2. 해당 파트너십의 오늘의 미션
         LocalDate today = LocalDate.now();
-        DailyMission todayMission = dailyMissionRepository.findByPartnershipAndMissionDate(partnership,today)
-                .orElseThrow(() -> new EntityNotFoundException("오늘 할당된 미션이 없습니다."));
+        Optional<DailyMission> dailyMissionOpt = dailyMissionRepository.findByPartnershipAndMissionDateWithMission(partnership, today);
 
+        DailyMission dailyMission;
+
+        if (dailyMissionOpt.isPresent()) {
+            // 2-1. 오늘의 미션이 이미 존재하면, 그대로 사용.
+            dailyMission = dailyMissionOpt.get();
+        } else {
+            // 2-2. 오늘의 미션이 없다면 (자정 이후 커플이 됨), 즉시 새로 생성.
+            log.info("파트너십 ID {}: 오늘 할당된 미션이 없어 새로 생성합니다.", partnership.getId());
+
+            // 랜덤 미션 하나를 가져옵니다.
+            Mission randomMission = missionRepository.findRandomMission()
+                    .orElseThrow(() -> new EntityNotFoundException("할당할 미션 원본이 없습니다."));
+
+            // 새로운 DailyMission을 만들어 DB에 저장합니다.
+            dailyMission = DailyMission.builder()
+                    .partnership(partnership)
+                    .mission(randomMission)
+                    .missionDate(today)
+                    .build();
+            dailyMissionRepository.save(dailyMission);
+        }
         // 3. 미션 내용 반환
-        return new TodayMissionResponse(todayMission);
+        return new TodayMissionResponse(dailyMission);
     }
 
     @Transactional(readOnly = true)
