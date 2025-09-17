@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import java.util.List;
+import java.util.Optional;
 
 public interface SubmissionRepository extends JpaRepository<Submission, Long> {
 
@@ -31,5 +32,7 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
     // 특정 사용자가 제출한 Submission의 총 개수를 세는 메소드
     long countBySubmitter(Member submitter);
 
+    // imageUrl(파일 키) 필드로 Submission을 찾는 메소드
+    Optional<Submission> findByImageUrl(String imageUrl);
 
 }

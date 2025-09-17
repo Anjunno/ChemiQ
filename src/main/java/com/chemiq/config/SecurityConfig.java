@@ -125,6 +125,7 @@ public class SecurityConfig {
                         .requestMatchers("/signup").permitAll() // 회원가입은 인증 없이 허용
                         .requestMatchers("/reissue").permitAll() // 토큰 재발급 인증없이 허용
                         .requestMatchers("/login").permitAll() // 토큰 재발급 인증없이 허용
+                        .requestMatchers("/api/internal/**").permitAll() // 내부 API 경로 인증 없이 허용
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()//swagger 관련 허용
 //                        .anyRequest().permitAll()               // 다른 요청도 허용 (나중에 수정 가능)
                         .anyRequest().authenticated()               // 다른 요청 인증된 사용자

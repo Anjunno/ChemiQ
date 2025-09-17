@@ -87,7 +87,7 @@ public class SubmissionService {
                 .imageUrl(requestDto.getFileKey()) // URL 대신 파일 키(key)를 저장
                 .build();
 
-        Submission newSubmission =  submissionRepository.save(submission);
+        Submission newSubmission = submissionRepository.save(submission);
 
         // --- [첫 발걸음] 도전과제 달성 여부 확인(이벤트 발생) ---
         eventPublisher.publishEvent(new SubmissionCreatedEvent(newSubmission));
@@ -95,6 +95,18 @@ public class SubmissionService {
         return newSubmission;
     }
 
+    @Transactional
+    public void updateImageKey(String originalFileKey, String newFileKey) {
+        // 1. 원본 파일 키로 Submission을 조회.
+        submissionRepository.findByImageUrl(originalFileKey)
+                .ifPresent(submission -> {
+                    // 2. 찾았다면, 파일 키를 새로운 JPG 키로 업데이트.
+                    submission.setImageUrl(newFileKey); // Dirty Checking으로 자동 UPDATE
+                    log.info("Submission ID {}의 이미지 키가 '{}'에서 '{}'(으)로 업데이트되었습니다.",
+                            submission.getId(), originalFileKey, newFileKey);
+                });
+
+    }
 }
 
 
