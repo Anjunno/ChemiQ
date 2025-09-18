@@ -62,12 +62,22 @@ public class ReissueService {
 
 
         //새로운 access token 생성
-        String newAccessToken = jwtUtil.createJwt("access", memberNo, memberId, role, 60*60 * 1000L);
+//        String newAccessToken = jwtUtil.createJwt("access", memberNo, memberId, role, 60*60 * 1000L);
         //새로운 refresh token 생성
-        String newRefreshToken = jwtUtil.createJwt("refresh", memberNo, memberId, role, 60*60 * 10 * 1000L);
+//        String newRefreshToken = jwtUtil.createJwt("refresh", memberNo, memberId, role, 60*60 * 10 * 1000L);
+
 
         // 새로운 refresh token 저장
-        saveRefreshToken(memberNo, newRefreshToken,60*60 * 10 * 1000L);
+//        saveRefreshToken(memberNo, newRefreshToken,60*60 * 10 * 1000L);
+
+        String newAccessToken = jwtUtil.createJwt("access", memberNo, memberId, role, 60000L);
+
+        String newRefreshToken = jwtUtil.createJwt("refresh", memberNo, memberId, role, 2 * 60000L);
+
+        saveRefreshToken(memberNo, newRefreshToken,60000L);
+
+
+
 
 
 //        Map<String, String> tokens = new HashMap<>();
