@@ -3,16 +3,12 @@ package com.chemiq.service;
 import com.chemiq.DTO.DailyMissionResponse;
 import com.chemiq.DTO.SubmissionDetailDto;
 import com.chemiq.DTO.TimelineResponse;
-import com.chemiq.entity.DailyMission;
-import com.chemiq.entity.Evaluation;
-import com.chemiq.entity.Partnership;
-import com.chemiq.entity.Submission;
-import com.chemiq.repository.DailyMissionRepository;
-import com.chemiq.repository.EvaluationRepository;
-import com.chemiq.repository.PartnershipRepository;
-import com.chemiq.repository.SubmissionRepository;
+import com.chemiq.entity.*;
+import com.chemiq.repository.*;
 import com.chemiq.service.S3Service;
 import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,7 +27,8 @@ import org.springframework.data.domain.Sort;
 @Service
 @RequiredArgsConstructor
 public class TimelineService {
-
+    private static final Logger log = LoggerFactory.getLogger(TimelineService.class);
+    private final MissionRepository missionRepository;
     private final PartnershipRepository partnershipRepository;
     private final SubmissionRepository submissionRepository;
     private final DailyMissionRepository dailyMissionRepository;
@@ -99,17 +96,38 @@ public class TimelineService {
         });
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public DailyMissionResponse getTodayMissionStatus(Long memberNo) {
 
         // 1. 파트너 존재여부 확인 (기존과 동일)
         Partnership partnership = partnershipRepository.findAcceptedPartnershipByMemberNo(memberNo)
                 .orElseThrow(() -> new EntityNotFoundException("파트너가 존재하지 않습니다."));
 
-        // 2. 해당 파트너십의 오늘의 미션 조회 (기존과 동일)
+        // 2. 해당 파트너십의 오늘의 미션
         LocalDate today = LocalDate.now();
-        DailyMission dailyMission = dailyMissionRepository.findByPartnershipAndMissionDateWithMission(partnership, today)
-                .orElseThrow(() -> new EntityNotFoundException("오늘 할당된 미션이 없습니다."));
+        Optional<DailyMission> dailyMissionOpt = dailyMissionRepository.findByPartnershipAndMissionDateWithMission(partnership, today);
+
+        DailyMission dailyMission;
+
+        if (dailyMissionOpt.isPresent()) {
+            // 2-1. 오늘의 미션이 이미 존재하면, 그대로 사용.
+            dailyMission = dailyMissionOpt.get();
+        } else {
+            // 2-2. 오늘의 미션이 없다면 (자정 이후 커플이 됨), 즉시 새로 생성.
+            log.info("파트너십 ID {}: 오늘 할당된 미션이 없어 새로 생성합니다.", partnership.getId());
+
+            // 랜덤 미션 하나를 가져옵니다.
+            Mission randomMission = missionRepository.findRandomMission()
+                    .orElseThrow(() -> new EntityNotFoundException("할당할 미션 원본이 없습니다."));
+
+            // 새로운 DailyMission을 만들어 DB에 저장합니다.
+            dailyMission = DailyMission.builder()
+                    .partnership(partnership)
+                    .mission(randomMission)
+                    .missionDate(today)
+                    .build();
+            dailyMissionRepository.save(dailyMission);
+        }
 
         // 3. 해당 미션에 대한 제출물들 조회 (기존과 동일)
         List<Submission> todaySubmissions = submissionRepository.findAllByDailyMissionWithSubmitter(dailyMission);
