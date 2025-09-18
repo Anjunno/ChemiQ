@@ -41,11 +41,17 @@ public class JWTFilter extends OncePerRequestFilter {
         // 요청 헤더의 Authorization 값이 없거나 Bearer로 시작하지 않음
         if(authorization == null || !authorization.startsWith("Bearer")) {
 
-            System.out.println("token Null");
-            // 토큰 없음 → 다음 필터로 넘어감 (로그인 안 된 상태)
-            filterChain.doFilter(request, response);
+            PrintWriter writer = response.getWriter();
+            writer.print("token null");
 
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // stateCode : 401
             return;
+
+//            System.out.println("token Null");
+//            // 토큰 없음 → 다음 필터로 넘어감 (로그인 안 된 상태)
+//            filterChain.doFilter(request, response);
+//
+//            return;
         }
 
 
