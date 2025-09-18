@@ -64,10 +64,10 @@ public class MemberController {
 
 
 
-//    @GetMapping("/test")
-//    public ResponseEntity<?> test() {
-//        return ResponseEntity.ok().body("접근 가능합니다");
-//    }
+    @GetMapping("/test")
+    public ResponseEntity<?> test() {
+        return ResponseEntity.ok().body("접근 가능합니다");
+    }
 
 
     @Operation(
