@@ -28,7 +28,12 @@ public class JWTFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
         // 회원가입, 로그인 등 토큰 검사 불필요한 경로는 필터 무시
-        if (path.equals("/signup") || path.equals("/login") || path.equals("/reissue")) {
+        if (path.equals("/signup")
+                || path.equals("/login")
+                || path.equals("/reissue")
+                || path.startsWith("/api/internal/")
+                || path.startsWith("/swagger-ui/")
+                || path.startsWith("/v3/api-docs/")) {
             filterChain.doFilter(request, response);
             return;
         }
