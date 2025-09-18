@@ -26,14 +26,20 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
+
         String path = request.getRequestURI();
         // 회원가입, 로그인 등 토큰 검사 불필요한 경로는 필터 무시
+//        if (path.equals("/signup") || path.equals("/login") || path.equals("/reissue"))
         if (path.equals("/signup")
                 || path.equals("/login")
                 || path.equals("/reissue")
-                || path.startsWith("/api/internal/")
-                || path.startsWith("/swagger-ui/")
-                || path.startsWith("/v3/api-docs/")) {
+                || path.startsWith("/api/internal/submissions/image-key")
+                || path.startsWith("/swagger-ui")
+                || path.startsWith("/v3/api-docs")
+                || path.startsWith("/swagger-resources")
+                || path.equals("/swagger-ui.html")
+                || path.startsWith("/webjars/"))
+        {
             filterChain.doFilter(request, response);
             return;
         }
