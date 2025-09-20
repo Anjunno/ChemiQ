@@ -72,9 +72,9 @@ public class ReissueService {
 
         String newAccessToken = jwtUtil.createJwt("access", memberNo, memberId, role, 60000L);
 
-        String newRefreshToken = jwtUtil.createJwt("refresh", memberNo, memberId, role, 2 * 60000L);
+        String newRefreshToken = jwtUtil.createJwt("refresh", memberNo, memberId, role, 5 * 60000L);
 
-        saveRefreshToken(memberNo, newRefreshToken,60000L);
+        saveRefreshToken(memberNo, newRefreshToken, 5 * 60000L);
 
 
 
