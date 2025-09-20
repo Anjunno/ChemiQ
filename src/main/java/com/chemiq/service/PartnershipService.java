@@ -1,5 +1,6 @@
 package com.chemiq.service;
 
+import com.chemiq.DTO.HomePartnerInfoDto;
 import com.chemiq.DTO.PartnershipReceiveResponse;
 import com.chemiq.DTO.PartnershipSentResponse;
 import com.chemiq.DTO.PartnershipPartnerResponse;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 public class PartnershipService {
     private final PartnershipRepository partnershipRepository;
     private final MemberRepository memberRepository;
+    private final S3Service s3Service;
 
     private static final Logger log = LoggerFactory.getLogger(PartnershipService.class);
     @Transactional
@@ -213,6 +215,28 @@ public class PartnershipService {
 
         return new PartnershipPartnerResponse(partner);
 
+    }
+
+    // PartnershipService.java 또는 ScreenService.java
+    @Transactional(readOnly = true)
+    public Optional<HomePartnerInfoDto> getHomePartnerInfo(Long memberNo) {
+
+        // 1. DB에서 memberNo가 속한 파트너 관계를 Optional로 받습니다.
+        Optional<Partnership> partnershipOpt = partnershipRepository.findAcceptedPartnershipByMemberNo(memberNo);
+
+        // 2. Optional의 map 기능을 사용하여, 파트너십이 존재할 경우에만 DTO로 변환합니다.
+        return partnershipOpt.map(partnership -> {
+            // 파트너 Member 객체를 찾습니다.
+            Member partner = partnership.getRequester().getMemberNo().equals(memberNo)
+                    ? partnership.getAddressee()
+                    : partnership.getRequester();
+
+            // 파트너의 프로필 이미지 URL을 생성합니다.
+            String partnerImageUrl = s3Service.getDownloadPresignedUrl(partner.getProfileImageKey());
+
+            // HomePartnerInfoDto를 생성합니다.
+            return new HomePartnerInfoDto(partnership,partner.getNickname(),partnerImageUrl);
+        });
     }
 
 
