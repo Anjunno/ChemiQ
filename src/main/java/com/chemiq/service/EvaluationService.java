@@ -100,14 +100,9 @@ public class EvaluationService {
         // 4-1. 스트릭(streak) 1 증가.
         partnership.increaseStreak();
 
-        // 4-2. 케미 지수(chemiScore)를 업데이트.
-        // 두 평가의 평균 점수를 계산.
-        double averageScore = evaluations.stream()
-                .mapToDouble(Evaluation::getScore)
-                .average()
-                .orElse(0.0); // 혹시 모를 경우를 대비해 기본값 설정
+        // 4-2. 케미 지수(chemiScore)를 업데이트.(+0.2)
+        partnership.increaseChemiScoreByCompletion();
 
-        partnership.updateChemiScore(averageScore);
     }
 
     @Transactional(readOnly = true)

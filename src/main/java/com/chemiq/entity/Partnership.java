@@ -82,4 +82,8 @@ public class Partnership {
             this.chemiScore = (this.chemiScore + newAverageScore) / 2.0;
         }
     }
+
+    public void increaseChemiScoreByCompletion() {
+        this.chemiScore = Math.min(100.0, this.chemiScore + 0.2);
+    }
 }

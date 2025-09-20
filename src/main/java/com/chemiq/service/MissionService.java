@@ -72,7 +72,7 @@ public class MissionService {
                     partnership.resetStreak();
 
                     // 2. 케미 지수 패널티를 적용합니다.
-                    partnership.applyScorePenalty(0.2); // 예시: 0.2점 차감
+                    partnership.applyScorePenalty(0.1); // 0.1점 차감
                     log.info("파트너십 ID {}: 케미 지수 패널티 적용됨. 현재 점수: {}", partnership.getId(), partnership.getChemiScore());
 
                     // 3. DailyMission의 상태를 FAILED로 변경합니다.
