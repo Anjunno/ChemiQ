@@ -122,7 +122,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
 
 //        System.out.println("로그인 실패");
-        response.setStatus(401);
+        response.setStatus(403);
     }
 
 
