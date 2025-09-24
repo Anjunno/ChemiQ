@@ -19,7 +19,7 @@ public class RefreshTokenService {
         RefreshToken tokenEntity = refreshTokenRepository.findByRefreshToken(refreshToken)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid or already logged out token"));
 
-        // 2. 조회된 엔티티를 삭제합니다. 이것이 더 효율적이고 안전합니다.
+        // 2. 조회된 엔티티를 삭제합니다.
         refreshTokenRepository.delete(tokenEntity);
     }
 }

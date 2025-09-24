@@ -81,18 +81,18 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         // 권한 이름 추출 (ex. "ROLE_USER", "ROLE_ADMIN")
         String role = auth.getAuthority();
 
-        // JWT 엑세스토큰 생성 (만료 시간: 1시간)
+        // JWT 엑세스토큰 생성 (만료 시간: 30분)
 //        String accessToken = jwtUtil.createJwt("access", memberNo, memberId, role, 60*60 * 1000L);
 //        String accessToken = jwtUtil.createJwt("access", memberNo, memberId, role, 200000L);
-        String accessToken = jwtUtil.createJwt("access", memberNo, memberId, role, 60000L);
+        String accessToken = jwtUtil.createJwt("access", memberNo, memberId, role, 30 * 60 * 1000L);
 
-        // JWT 리프레시토큰 생성 (만료 시간: 10시간)
+        // JWT 리프레시토큰 생성 (만료 시간: 14일)
 //        String refreshToken = jwtUtil.createJwt("refresh", memberNo, memberId, role, 60*60*10 * 1000L);
-        String refreshToken = jwtUtil.createJwt("refresh", memberNo, memberId, role, 5 * 60000L);
+        String refreshToken = jwtUtil.createJwt("refresh", memberNo, memberId, role, 14 * 24 * 60 * 60 * 1000L);
 
 
         // JWT 리프레시토큰 DB에 저장
-        saveRefreshToken(memberNo, refreshToken, 60*60*10 * 1000L);
+        saveRefreshToken(memberNo, refreshToken, 14 * 24 * 60 * 60 * 1000L);
 
 
 
