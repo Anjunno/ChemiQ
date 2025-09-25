@@ -13,15 +13,81 @@
 ---
 ##  기술 스택
 
-| 기술 | 사용한 기술 |
-|------|------------|
-| 📱 프론트엔드 & 모바일 | ![Flutter](https://img.shields.io/badge/Flutter-02569B?style=flat&logo=flutter&logoColor=white) ![Dart](https://img.shields.io/badge/Dart-0175C2?style=flat&logo=dart&logoColor=white) ![Material Design](https://img.shields.io/badge/Material%20Design-757575?style=flat&logo=materialdesign&logoColor=white) |
-| ☕ 백엔드 | ![Spring Boot](https://img.shields.io/badge/SpringBoot-6DB33F?style=flat&logo=springboot&logoColor=white) ![Java](https://img.shields.io/badge/Java-007396?style=flat&logo=openjdk&logoColor=white) ![Spring Security](https://img.shields.io/badge/Spring%20Security-6DB33F?style=flat&logo=spring&logoColor=white) ![REST API](https://img.shields.io/badge/REST%20API-6DB33F?style=flat&logo=swagger&logoColor=white) ![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=flat&logo=swagger&logoColor=white) |
-| 🗄 데이터베이스 | ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat&logo=mysql&logoColor=white) ![Amazon RDS](https://img.shields.io/badge/Amazon%20RDS-527FFF?style=flat&logo=amazonrds&logoColor=white) |
-| ☁ 클라우드 & DevOps | ![AWS EC2](https://img.shields.io/badge/AWS%20EC2-FF9900?style=flat&logo=amazonec2&logoColor=white) ![AWS S3](https://img.shields.io/badge/AWS%20S3-569A31?style=flat&logo=amazons3&logoColor=white) ![AWS Lambda](https://img.shields.io/badge/AWS%20Lambda-FF9900?style=flat&logo=awslambda&logoColor=white) ![AWS Route53](https://img.shields.io/badge/AWS%20Route%2053-8C4FFF?style=flat&logo=amazonroute53&logoColor=white) |
-| ⚙ CI/CD & 협업 | ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat&logo=githubactions&logoColor=white) ![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white) |
-| 🔐 인증 & 보안 | ![JWT](https://img.shields.io/badge/JWT-000000?style=flat&logo=jsonwebtokens&logoColor=white) ![HTTPS](https://img.shields.io/badge/HTTPS-0078D7?style=flat&logo=ssl&logoColor=white) ![Nginx](https://img.shields.io/badge/NGINX-009639?style=flat&logo=nginx&logoColor=white) ![TLS](https://img.shields.io/badge/TLS-000000?style=flat&logo=letsencrypt&logoColor=white) ![Certbot](https://img.shields.io/badge/Certbot-003A70?style=flat&logo=letsencrypt&logoColor=white) ![Let's Encrypt](https://img.shields.io/badge/Let's%20Encrypt-003A70?style=flat&logo=letsencrypt&logoColor=white) |
-| 💻 운영체제 & 환경 | ![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=flat&logo=ubuntu&logoColor=white) |
+| 기술 | 사용한 기술                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+|------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  프론트엔드 & 모바일 | ![Flutter](https://img.shields.io/badge/Flutter-02569B?style=flat&logo=flutter&logoColor=white) ![Dart](https://img.shields.io/badge/Dart-0175C2?style=flat&logo=dart&logoColor=white) ![Material Design](https://img.shields.io/badge/Material%20Design-757575?style=flat&logo=materialdesign&logoColor=white)                                                                                                                                                                                                             |
+|  백엔드 | ![Spring Boot](https://img.shields.io/badge/SpringBoot-6DB33F?style=flat&logo=springboot&logoColor=white) ![Java](https://img.shields.io/badge/Java-007396?style=flat&logo=openjdk&logoColor=white) ![Spring Security](https://img.shields.io/badge/Spring%20Security-6DB33F?style=flat&logo=spring&logoColor=white) ![REST API](https://img.shields.io/badge/REST%20API-6DB33F?style=flat&logo=swagger&logoColor=white) ![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=flat&logo=swagger&logoColor=white)    |
+|  데이터베이스 | ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat&logo=mysql&logoColor=white) ![Amazon RDS](https://img.shields.io/badge/Amazon%20RDS-527FFF?style=flat&logo=amazonrds&logoColor=white)                                                                                                                                                                                                                                                                                                                         |
+|  클라우드 & DevOps | ![AWS EC2](https://img.shields.io/badge/AWS%20EC2-FF9900?style=flat&logo=amazonec2&logoColor=white) ![AWS S3](https://img.shields.io/badge/AWS%20S3-569A31?style=flat&logo=amazons3&logoColor=white) ![AWS Lambda](https://img.shields.io/badge/AWS%20Lambda-FF9900?style=flat&logo=awslambda&logoColor=white) ![AWS Route53](https://img.shields.io/badge/AWS%20Route%2053-8C4FFF?style=flat&logo=amazonroute53&logoColor=white) ![Nginx](https://img.shields.io/badge/NGINX-009639?style=flat&logo=nginx&logoColor=white) |
+|  CI/CD | ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat&logo=githubactions&logoColor=white) ![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white)                                                                                                                                                                                                                                                                                                          |
+|  인증 & 보안 | ![JWT](https://img.shields.io/badge/JWT-000000?style=flat&logo=jsonwebtokens&logoColor=white) ![HTTPS](https://img.shields.io/badge/HTTPS-0078D7?style=flat&logo=ssl&logoColor=white) ![TLS](https://img.shields.io/badge/TLS-000000?style=flat&logo=letsencrypt&logoColor=white) ![Certbot](https://img.shields.io/badge/Certbot-003A70?style=flat&logo=letsencrypt&logoColor=white) ![Let's Encrypt](https://img.shields.io/badge/Let's%20Encrypt-003A70?style=flat&logo=letsencrypt&logoColor=white)                     |
+|  운영체제 & 환경 | ![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=flat&logo=ubuntu&logoColor=white)                                                                                                                                                                                                                                                                                                                                                                                                                                |
+
+---
+##  기술 스택 상세 설명
+<div style="border:2px solid #adb19a; border-radius:10px; padding:15px; background-color:#282c34; margin-bottom:15px;">
+
+### 1.  프론트엔드 & 모바일
+**Flutter & Dart**: iOS와 Android 앱을 단일 코드베이스로 개발.  
+UI, 상태 관리, 서버 API 통신 구현.
+
+</div>
+
+<div style="border:2px solid #adb19a; border-radius:10px; padding:15px; background-color:#282c34; margin-bottom:15px;">
+
+### 2.  백엔드
+**Spring Boot**: RESTful API 서버 구축. 내장 Tomcat 및 자동 설정 사용.  
+**Java**: 백엔드 주력 언어.  
+**Spring Security**: JWT 기반 인증/인가 처리, 커스텀 Filter 구현.  
+**JPA (Java Persistence API)**: 데이터베이스 객체 매핑 및 조작.  
+**Swagger (OpenAPI)**: REST API 명세 자동 문서화 및 테스트 UI 제공.
+
+</div>
+
+<div style="border:2px solid #adb19a; border-radius:10px; padding:15px; background-color:#282c34; margin-bottom:15px;">
+
+### 3.  데이터베이스
+**MySQL**: 계정, 파트너 관계, 미션 데이터 등 정형 데이터 저장.  
+**Amazon RDS**: 관리형 데이터베이스, 자동 백업 및 확장성 제공.
+
+</div>
+
+<div style="border:2px solid #adb19a; border-radius:10px; padding:15px; background-color:#282c34; margin-bottom:15px;">
+
+### 4.  클라우드 & DevOps
+**AWS EC2**: 백엔드 애플리케이션 배포 및 24시간 실행.  
+**AWS S3**: 이미지 파일 저장, Pre-signed URL로 서버 부하 최소화.  
+**AWS Lambda**: HEIC 이미지 자동 JPG 변환.  
+**AWS Route 53**: 도메인 DNS 관리.  
+**Nginx**: 리버스 프록시, TLS 인증서 처리 후 Spring Boot 전달.
+
+</div>
+
+<div style="border:2px solid #adb19a; border-radius:10px; padding:15px; background-color:#282c34; margin-bottom:15px;">
+
+### 5.  CI/CD
+**GitHub Actions**: 소스 코드 푸시 시 빌드/테스트/배포 자동화.  
+**GitHub**: 버전 관리 및 원격 저장소.  
+**Gradle**: 의존성 관리 및 JAR 빌드 자동화.
+
+</div>
+
+<div style="border:2px solid #adb19a; border-radius:10px; padding:15px; background-color:#282c34; margin-bottom:15px;">
+
+### 6.  인증 & 보안
+**JWT (JSON Web Token)**: Stateless 토큰 기반 인증, Access/Refresh Token 관리.  
+**HTTPS/TLS**: 클라이언트-서버 통신 암호화.  
+**Let's Encrypt & Certbot**: 무료 TLS/SSL 인증서 발급 및 자동 갱신, Nginx 적용.
+
+</div>
+
+<div style="border:2px solid #adb19a; border-radius:10px; padding:15px; background-color:#282c34; margin-bottom:15px;">
+
+### 7.  운영체제 & 환경
+**Ubuntu**: AWS EC2에서 사용하는 Linux 기반 운영체제.
+
+</div>
+
 
 ---
 <h1>시스템 아키텍처</h1>
