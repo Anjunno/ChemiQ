@@ -24,6 +24,13 @@
 |  운영체제 & 환경 | ![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=flat&logo=ubuntu&logoColor=white)                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
 ---
+<h1>시스템 아키텍처</h1>
+<p align="center">
+  <img src="/chemiq아키텍처.drawio.png" />
+</p>
+
+---
+
 ## 기술 스택 상세 설명
 
 <details>
@@ -68,12 +75,7 @@
 </details>
 
 ---
-<h1>시스템 아키텍처</h1>
-<p align="center">
-  <img src="/chemiq아키텍처.drawio.png" />
-</p>
 
----
 ## 디렉토리 구조
 <details>
 
