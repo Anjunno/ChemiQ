@@ -11,6 +11,19 @@
 하루하루의 작은 도전이 쌓여, 파트너와의 특별한 순간과 추억을 기록하게 됩니다.
 
 ---
+##  기술 스택
+
+| 기술 | 사용한 기술 |
+|------|------------|
+| 📱 프론트엔드 & 모바일 | ![Flutter](https://img.shields.io/badge/Flutter-02569B?style=flat&logo=flutter&logoColor=white) ![Dart](https://img.shields.io/badge/Dart-0175C2?style=flat&logo=dart&logoColor=white) ![Material Design](https://img.shields.io/badge/Material%20Design-757575?style=flat&logo=materialdesign&logoColor=white) |
+| ☕ 백엔드 | ![Spring Boot](https://img.shields.io/badge/SpringBoot-6DB33F?style=flat&logo=springboot&logoColor=white) ![Java](https://img.shields.io/badge/Java-007396?style=flat&logo=openjdk&logoColor=white) ![Spring Security](https://img.shields.io/badge/Spring%20Security-6DB33F?style=flat&logo=spring&logoColor=white) ![REST API](https://img.shields.io/badge/REST%20API-6DB33F?style=flat&logo=swagger&logoColor=white) ![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=flat&logo=swagger&logoColor=white) |
+| 🗄 데이터베이스 | ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat&logo=mysql&logoColor=white) ![Amazon RDS](https://img.shields.io/badge/Amazon%20RDS-527FFF?style=flat&logo=amazonrds&logoColor=white) |
+| ☁ 클라우드 & DevOps | ![AWS EC2](https://img.shields.io/badge/AWS%20EC2-FF9900?style=flat&logo=amazonec2&logoColor=white) ![AWS S3](https://img.shields.io/badge/AWS%20S3-569A31?style=flat&logo=amazons3&logoColor=white) ![AWS Lambda](https://img.shields.io/badge/AWS%20Lambda-FF9900?style=flat&logo=awslambda&logoColor=white) ![AWS Route53](https://img.shields.io/badge/AWS%20Route%2053-8C4FFF?style=flat&logo=amazonroute53&logoColor=white) |
+| ⚙ CI/CD & 협업 | ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat&logo=githubactions&logoColor=white) ![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white) |
+| 🔐 인증 & 보안 | ![JWT](https://img.shields.io/badge/JWT-000000?style=flat&logo=jsonwebtokens&logoColor=white) ![HTTPS](https://img.shields.io/badge/HTTPS-0078D7?style=flat&logo=ssl&logoColor=white) ![Nginx](https://img.shields.io/badge/NGINX-009639?style=flat&logo=nginx&logoColor=white) ![TLS](https://img.shields.io/badge/TLS-000000?style=flat&logo=letsencrypt&logoColor=white) ![Certbot](https://img.shields.io/badge/Certbot-003A70?style=flat&logo=letsencrypt&logoColor=white) ![Let's Encrypt](https://img.shields.io/badge/Let's%20Encrypt-003A70?style=flat&logo=letsencrypt&logoColor=white) |
+| 💻 운영체제 & 환경 | ![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=flat&logo=ubuntu&logoColor=white) |
+
+---
 <h1>시스템 아키텍처</h1>
 <p align="center">
   <img src="/chemiq아키텍처.drawio.png" />
