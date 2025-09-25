@@ -26,6 +26,10 @@
 ---
 ## 기술 스택 상세 설명
 
+<details>
+
+<summary>ChemiQ 기술 스택 상세 설명</summary>
+
 > ### 1.  프론트엔드 & 모바일
 > **Flutter & Dart**: iOS와 Android 앱을 단일 코드베이스로 개발.  
 > UI, 상태 관리, 서버 API 통신 구현.
@@ -61,6 +65,7 @@
 > ### 7.  운영체제 & 환경
 > **Ubuntu**: AWS EC2에서 사용하는 Linux 기반 운영체제.
 
+</details>
 
 ---
 <h1>시스템 아키텍처</h1>
