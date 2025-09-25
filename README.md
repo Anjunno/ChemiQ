@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="/chemiq_main_icon.png" alt="Dugoutzone Logo" width="280"/>
+  <img src="/chemiQQ.png" width="280"/>
 </p>
 
 <h1 align="center">ChemiQ(케미퀘스트)</h1>
@@ -9,6 +9,12 @@
 사진과 짧은 텍스트로 미션을 수행하고, 상대방의 결과물에 점수와 코멘트를 남기며 **관계를 게임처럼 재미있게 강화**할 수 있습니다.  
 
 하루하루의 작은 도전이 쌓여, 파트너와의 특별한 순간과 추억을 기록하게 됩니다.
+
+---
+<h1>시스템 아키텍처</h1>
+<p align="center">
+  <img src="/chemiq아키텍처.drawio.png" />
+</p>
 
 ---
 
