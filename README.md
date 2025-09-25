@@ -24,69 +24,42 @@
 |  운영체제 & 환경 | ![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=flat&logo=ubuntu&logoColor=white)                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
 ---
-##  기술 스택 상세 설명
-<div style="border:2px solid #adb19a; border-radius:10px; padding:15px; background-color:#282c34; margin-bottom:15px;">
+## 기술 스택 상세 설명
 
-### 1.  프론트엔드 & 모바일
-**Flutter & Dart**: iOS와 Android 앱을 단일 코드베이스로 개발.  
-UI, 상태 관리, 서버 API 통신 구현.
+> ### 1.  프론트엔드 & 모바일
+> **Flutter & Dart**: iOS와 Android 앱을 단일 코드베이스로 개발.  
+> UI, 상태 관리, 서버 API 통신 구현.
 
-</div>
+> ### 2.  백엔드
+> **Spring Boot**: RESTful API 서버 구축. 내장 Tomcat 및 자동 설정 사용.  
+> **Java**: 백엔드 주력 언어.  
+> **Spring Security**: JWT 기반 인증/인가 처리, 커스텀 Filter 구현.  
+> **JPA (Java Persistence API)**: 데이터베이스 객체 매핑 및 조작.  
+> **Swagger (OpenAPI)**: REST API 명세 자동 문서화 및 테스트 UI 제공.
 
-<div style="border:2px solid #adb19a; border-radius:10px; padding:15px; background-color:#282c34; margin-bottom:15px;">
+> ### 3.  데이터베이스
+> **MySQL**: 계정, 파트너 관계, 미션 데이터 등 정형 데이터 저장.  
+> **Amazon RDS**: 관리형 데이터베이스, 자동 백업 및 확장성 제공.
 
-### 2.  백엔드
-**Spring Boot**: RESTful API 서버 구축. 내장 Tomcat 및 자동 설정 사용.  
-**Java**: 백엔드 주력 언어.  
-**Spring Security**: JWT 기반 인증/인가 처리, 커스텀 Filter 구현.  
-**JPA (Java Persistence API)**: 데이터베이스 객체 매핑 및 조작.  
-**Swagger (OpenAPI)**: REST API 명세 자동 문서화 및 테스트 UI 제공.
+> ### 4.  클라우드 & DevOps
+> **AWS EC2**: 백엔드 애플리케이션 배포 및 24시간 실행.  
+> **AWS S3**: 이미지 파일 저장, Pre-signed URL로 서버 부하 최소화.  
+> **AWS Lambda**: HEIC 이미지 자동 JPG 변환.  
+> **AWS Route 53**: 도메인 DNS 관리.  
+> **Nginx**: 리버스 프록시, TLS 인증서 처리 후 Spring Boot 전달.
 
-</div>
+> ### 5.  CI/CD
+> **GitHub Actions**: 소스 코드 푸시 시 빌드/테스트/배포 자동화.  
+> **GitHub**: 버전 관리 및 원격 저장소.  
+> **Gradle**: 의존성 관리 및 JAR 빌드 자동화.
 
-<div style="border:2px solid #adb19a; border-radius:10px; padding:15px; background-color:#282c34; margin-bottom:15px;">
+> ### 6.  인증 & 보안
+> **JWT (JSON Web Token)**: Stateless 토큰 기반 인증, Access/Refresh Token 관리.  
+> **HTTPS/TLS**: 클라이언트-서버 통신 암호화.  
+> **Let's Encrypt & Certbot**: 무료 TLS/SSL 인증서 발급 및 자동 갱신, Nginx 적용.
 
-### 3.  데이터베이스
-**MySQL**: 계정, 파트너 관계, 미션 데이터 등 정형 데이터 저장.  
-**Amazon RDS**: 관리형 데이터베이스, 자동 백업 및 확장성 제공.
-
-</div>
-
-<div style="border:2px solid #adb19a; border-radius:10px; padding:15px; background-color:#282c34; margin-bottom:15px;">
-
-### 4.  클라우드 & DevOps
-**AWS EC2**: 백엔드 애플리케이션 배포 및 24시간 실행.  
-**AWS S3**: 이미지 파일 저장, Pre-signed URL로 서버 부하 최소화.  
-**AWS Lambda**: HEIC 이미지 자동 JPG 변환.  
-**AWS Route 53**: 도메인 DNS 관리.  
-**Nginx**: 리버스 프록시, TLS 인증서 처리 후 Spring Boot 전달.
-
-</div>
-
-<div style="border:2px solid #adb19a; border-radius:10px; padding:15px; background-color:#282c34; margin-bottom:15px;">
-
-### 5.  CI/CD
-**GitHub Actions**: 소스 코드 푸시 시 빌드/테스트/배포 자동화.  
-**GitHub**: 버전 관리 및 원격 저장소.  
-**Gradle**: 의존성 관리 및 JAR 빌드 자동화.
-
-</div>
-
-<div style="border:2px solid #adb19a; border-radius:10px; padding:15px; background-color:#282c34; margin-bottom:15px;">
-
-### 6.  인증 & 보안
-**JWT (JSON Web Token)**: Stateless 토큰 기반 인증, Access/Refresh Token 관리.  
-**HTTPS/TLS**: 클라이언트-서버 통신 암호화.  
-**Let's Encrypt & Certbot**: 무료 TLS/SSL 인증서 발급 및 자동 갱신, Nginx 적용.
-
-</div>
-
-<div style="border:2px solid #adb19a; border-radius:10px; padding:15px; background-color:#282c34; margin-bottom:15px;">
-
-### 7.  운영체제 & 환경
-**Ubuntu**: AWS EC2에서 사용하는 Linux 기반 운영체제.
-
-</div>
+> ### 7.  운영체제 & 환경
+> **Ubuntu**: AWS EC2에서 사용하는 Linux 기반 운영체제.
 
 
 ---
