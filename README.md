@@ -71,53 +71,51 @@
 ---
 ## 디렉토리 구조
 <details>
-<summary>디렉토리 구조</summary>
 
-| 경로 | 설명 |
-|------|------|
-| `anjunno-chemiq/` | 프로젝트 루트 |
-| └─ `src/main/java/com/chemiq/` | Java 소스 코드 루트 |
-| &nbsp;&nbsp;├─ `ChemiqApplication.java` | Spring Boot 메인 클래스 |
-| &nbsp;&nbsp;├─ `config/` | 설정 관련 클래스 |
-| &nbsp;&nbsp;│&nbsp;&nbsp;├─ `S3Config.java` | S3 설정 |
-| &nbsp;&nbsp;│&nbsp;&nbsp;├─ `SecurityConfig.java` | Spring Security 설정 |
-| &nbsp;&nbsp;│&nbsp;&nbsp;└─ `SwaggerConfig.java` | Swagger 설정 |
-| &nbsp;&nbsp;├─ `controller/` | REST 컨트롤러 |
-| &nbsp;&nbsp;│&nbsp;&nbsp;├─ `AuthControllerDoc.java` | 인증 관련 API |
-| &nbsp;&nbsp;│&nbsp;&nbsp;├─ `EvaluationController.java` | 평가 관련 API |
-| &nbsp;&nbsp;│&nbsp;&nbsp;├─ `InternalApiController.java` | 내부 API |
-| &nbsp;&nbsp;│&nbsp;&nbsp;├─ `MemberController.java` | 회원 API |
-| &nbsp;&nbsp;│&nbsp;&nbsp;├─ `MissionController.java` | 미션 API |
-| &nbsp;&nbsp;│&nbsp;&nbsp;├─ `PartnershipController.java` | 파트너십 API |
-| &nbsp;&nbsp;│&nbsp;&nbsp;├─ `ReissueController.java` | 토큰 재발급 API |
-| &nbsp;&nbsp;│&nbsp;&nbsp;├─ `ScreenController.java` | 화면 관련 API |
-| &nbsp;&nbsp;│&nbsp;&nbsp;├─ `SubmissionController.java` | 제출물 API |
-| &nbsp;&nbsp;│&nbsp;&nbsp;└─ `TimelineController.java` | 타임라인 API |
-| &nbsp;&nbsp;├─ `DTO/` | 데이터 전송 객체(DTO) |
-| &nbsp;&nbsp;│&nbsp;&nbsp;└─ `...` | 각종 DTO 클래스 (AchievementDto, MemberInfoDto 등) |
-| &nbsp;&nbsp;├─ `entity/` | JPA 엔티티 |
-| &nbsp;&nbsp;│&nbsp;&nbsp;└─ `...` | 엔티티 클래스 (Member, Mission, Submission 등) |
-| &nbsp;&nbsp;├─ `event/` | 이벤트 관련 클래스 |
-| &nbsp;&nbsp;│&nbsp;&nbsp;└─ `SubmissionCreatedEvent.java` | 제출물 생성 이벤트 |
-| &nbsp;&nbsp;├─ `exception/` | 예외 처리 클래스 |
-| &nbsp;&nbsp;│&nbsp;&nbsp;├─ `DuplicateMemberIdException.java` | 중복 회원 ID 예외 |
-| &nbsp;&nbsp;│&nbsp;&nbsp;└─ `MemberNotFoundException.java` | 회원 미존재 예외 |
-| &nbsp;&nbsp;├─ `handler/` | 예외 핸들러 |
-| &nbsp;&nbsp;│&nbsp;&nbsp;└─ `GlobalExceptionHandler.java` | 글로벌 예외 처리 |
-| &nbsp;&nbsp;├─ `jwt/` | JWT 관련 클래스 |
-| &nbsp;&nbsp;│&nbsp;&nbsp;├─ `CustomLogoutFilter.java` | 로그아웃 필터 |
-| &nbsp;&nbsp;│&nbsp;&nbsp;├─ `JWTFilter.java` | JWT 인증 필터 |
-| &nbsp;&nbsp;│&nbsp;&nbsp;├─ `JWTUtil.java` | JWT 유틸 |
-| &nbsp;&nbsp;│&nbsp;&nbsp;└─ `LoginFilter.java` | 로그인 필터 |
-| &nbsp;&nbsp;├─ `listener/` | 이벤트 리스너 |
-| &nbsp;&nbsp;│&nbsp;&nbsp;└─ `AchievementListener.java` | 업적 관련 리스너 |
-| &nbsp;&nbsp;├─ `repository/` | Spring Data JPA 레포지토리 |
-| &nbsp;&nbsp;│&nbsp;&nbsp;└─ `...` | 각종 Repository 클래스 |
-| &nbsp;&nbsp;└─ `service/` | 서비스 클래스 |
-| &nbsp;&nbsp;&nbsp;&nbsp;└─ `...` | 서비스 클래스 (MemberService, SubmissionService 등) |
+<summary>ChemiQ 디렉토리 구조</summary>
 
-</details>
+```text
+chemiq/
+├── ChemiqApplication.java           // Spring Boot 메인 클래스
+├── config/                          // 설정 관련 클래스
+│   ├── S3Config.java                // S3 설정
+│   ├── SecurityConfig.java          // Spring Security 설정
+│   └── SwaggerConfig.java           // Swagger 설정
+├── controller/                      // REST 컨트롤러
+│   ├── AuthControllerDoc.java       // 인증 관련 API
+│   ├── EvaluationController.java    // 평가 관련 API
+│   ├── InternalApiController.java   // 내부 API
+│   ├── MemberController.java        // 회원 API
+│   ├── MissionController.java       // 미션 API
+│   ├── PartnershipController.java   // 파트너십 API
+│   ├── ReissueController.java       // 토큰 재발급 API
+│   ├── ScreenController.java        // 화면 관련 API
+│   ├── SubmissionController.java    // 제출물 API
+│   └── TimelineController.java      // 타임라인 API
+├── DTO/                             // 데이터 전송 객체(DTO)
+│   └── ...                          // 각종 DTO 클래스
+├── entity/                          // JPA 엔티티
+│   └── ...                          // 엔티티 클래스
+├── event/                           // 이벤트 관련 클래스
+│   └── SubmissionCreatedEvent.java
+├── exception/                       // 예외 처리 클래스
+│   ├── DuplicateMemberIdException.java
+│   └── MemberNotFoundException.java
+├── handler/                         // 예외 핸들러
+│   └── GlobalExceptionHandler.java
+├── jwt/                             // JWT 관련 클래스
+│   ├── CustomLogoutFilter.java
+│   ├── JWTFilter.java
+│   ├── JWTUtil.java
+│   └── LoginFilter.java
+├── listener/                        // 이벤트 리스너
+│   └── AchievementListener.java
+├── repository/                      // Spring Data JPA 레포지토리
+│   └── ...
+└── service/                         // 서비스 클래스
+    └── ...
 
+```
 ---
 
 ## 📘 개발 로그
